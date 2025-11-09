@@ -24,7 +24,7 @@ struct ConfigState {
 
 int main() {
 	//Initialize Stuff
-	auto screen = ScreenInteractive::TerminalOutput();
+	auto screen = ScreenInteractive::Fullscreen();
 	ConfigState config;
 
 	//Checkboxes to choose which blocks to pick in the prompt
@@ -40,13 +40,23 @@ int main() {
         //Display components vertically
 		return vbox({
 			text("Choose Components to Show in your Prompt") | hcenter,
-			blocks->Render() | hcenter
+			blocks->Render() | hcenter,
+			text("Press 'q' to exit wizard") | hcenter,
 		});
+    });
+
+	//To catch 'q' keypress to exit wizard
+    auto component = CatchEvent(toRender, [&](Event event) {
+        if (event == Event::Character('q')) {
+            screen.ExitLoopClosure()();
+            return true;
+        }
+        return false;
     });
 
 
     //Loop and render component on the screen
-	screen.Loop(toRender);
+	screen.Loop(component);
 	cout << "Show Directory Path: " << (config.show_dir ? "Yes" : "No") << endl;
 	cout << "Show Git Status: " << (config.show_git ? "Yes" : "No") << endl;
 	return 0;
