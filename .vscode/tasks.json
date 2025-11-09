@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cmake",
+            "label": "CMake: configure",
+            "command": "configure",
+            "problemMatcher": [],
+            "detail": "Configure CMake project"
+        },
+        {
+            "type": "cmake",
+            "label": "CMake: build",
+            "command": "build",
+            "targets": [
+                "all"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Build all targets"
+        },
+        {
+            "label": "build debug executable",
+            "type": "cmake",
+            "command": "build",
+            "targets": [
+                "omp-wizard_debug"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Build debug version"
+        },
+        {
+            "label": "clean workspace",
+            "type": "shell",
+            "command": "rm -f ${workspaceFolder}/omp-wizard",
+            "problemMatcher": []
+        }
+    ]
+}
