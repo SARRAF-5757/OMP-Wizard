@@ -41,7 +41,9 @@ int main() {
 		return vbox({
 			text("Choose Components to Show in your Prompt") | hcenter,
 			blocks->Render() | hcenter,
-			text("Press 'q' to exit wizard") | hcenter,
+			text(" "),
+			text(" "),
+			hbox(text("Quit [q]"), text("          "), text("Next [n]")) | hcenter,
 		});
     });
 
@@ -51,6 +53,9 @@ int main() {
             screen.ExitLoopClosure()();
             return true;
         }
+		if (event == Event::Character('n')) {
+			//change a variable or something
+		}
         return false;
     });
 
