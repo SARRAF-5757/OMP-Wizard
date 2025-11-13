@@ -23,14 +23,14 @@ struct ConfigState {
 // TODO: Construct a dictionary of diamonds for human-readable usage in the future
 
 //^ List of leading diamond choices (radiobox entries)
-std::vector<std::string> leading_diamonds = {
+vector<string> leading_diamonds = {
     "\ue0b6",	//left half-circle
     "\ueb6f",	//left triangle
     "\uf0c8",	//square
 };
 
 //^ List of trailing diamond choices (radiobox entries)
-std::vector<std::string> trailing_diamonds = {
+vector<string> trailing_diamonds = {
     "\ue0b4",	//right half-circle
     "\ueb70",	//right triangle
     "\uf0c8",	//square
@@ -55,13 +55,13 @@ int main() {
 		.selected = &config.dmnd_leading,
     });
 	
-	std::string dmndConnectTitle = "Choose Connecting Diamond to Show in your Prompt";
+	string dmndConnectTitle = "Choose Connecting Diamond to Show in your Prompt";
     auto tabDmndConnecting = Radiobox({
 		.entries = trailing_diamonds,
 		.selected = &config.dmnd_connecting,
     });
 
-	std::string dmndTrailTitle = "Choose Trailing Diamond to Show in your Prompt";
+	string dmndTrailTitle = "Choose Trailing Diamond to Show in your Prompt";
     auto tabDmndTrailing = Radiobox({
 		.entries = trailing_diamonds,
 		.selected = &config.dmnd_trailing,
@@ -70,12 +70,12 @@ int main() {
 
 	//^ Vectors to switch contents among tabs (preloaded with first two screens)
 	//Vector of components representing each tab
-    std::vector<Component> showTabs = {
+    vector<Component> showTabs = {
 		tabChooseBlocks,
 		tabDmndLeading
 	};
 	//Titles shown on each screens
-	std::vector<std::string> tabMessage = {
+	vector<string> tabMessage = {
 		"Choose Components to Show in your Prompt",
 		"Choose Leading Diamond to Show in your Prompt"
 	};
