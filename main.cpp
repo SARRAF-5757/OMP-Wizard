@@ -103,7 +103,7 @@ int main() {
 			vbox({
 				text("[q] = Quit the wizard without generating config file"),
 				text("[n] = Confirm selections & go to the next screen"),
-				text("[f] = End the wizard and generate config file"),
+				text("[e] = End the wizard and generate config file"),
 				text("      (will use defaults if all options are not specified)")
 			}) | hcenter
 		}) | vcenter;
