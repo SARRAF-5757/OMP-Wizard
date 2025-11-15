@@ -25,15 +25,27 @@ struct ConfigState {
 //^ List of leading diamond choices (radiobox entries)
 vector<string> leading_diamonds = {
     "\ue0b6",	//left half-circle
-    "\ueb6f",	//left triangle
+    "\ue0b0",	//left triangle
     "\uf0c8",	//square
+	"\ue0ba",	//left lower slant
+	"\ue0be",	//left upper slant
+	"\ue0c2",	//left fire
+	"\ue0ca",	//left shockwave
+	"\ue0c7",	//left big square fade
+	"\ue0c5",	//left small square fade
 };
 
 //^ List of trailing diamond choices (radiobox entries)
 vector<string> trailing_diamonds = {
     "\ue0b4",	//right half-circle
-    "\ueb70",	//right triangle
+    "\ue0b2",	//right triangle
     "\uf0c8",	//square
+	"\ue0bc",	//right upper slant
+	"\ue0b8",	//right lower slant
+	"\ue0c0",	//right fire
+	"\ue0c8",	//right shockwave
+	"\e0c6",	//right big square fade
+	"\ue0c4",	//right small square fade
 };
 
 int main() {
