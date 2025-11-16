@@ -1,6 +1,4 @@
-#include <iostream>
 #include <fstream>
-#include <iomanip>
 #include <ftxui/component/component_base.hpp>
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
@@ -51,7 +49,7 @@ vector<string> trailing_diamonds = {
 
 //!--------------------------------------Generate JSON-------------------------------------!//
 void GenerateJSON(const ConfigState& config) {
-    // initialize vector of selected segments, and then formatted JSON segments
+    // initialize vectors of segment properties and populate them based on selected segments
     vector<string> types;
 	vector<string> templates;
 	vector<string> colors;
@@ -64,8 +62,8 @@ void GenerateJSON(const ConfigState& config) {
     }
     if (config.show_path) {
 		types.emplace_back("path");
-		templates.emplace_back(" {{ .Path }} ");
-		colors.emplace_back("#539aff");
+        templates.emplace_back(" \ue5ff {{ .Path }} ");
+        colors.emplace_back("#539aff");
 	}
     if (config.show_git) {
 		types.emplace_back("git");
@@ -73,65 +71,60 @@ void GenerateJSON(const ConfigState& config) {
 		colors.emplace_back("#fffd9c");
     }
 
-
-    // format JSON Segments based on selected segments
-    if (types.size() == 1) {
+    //^ First, just create all the segments with their basic properties
+    for (size_t i = 0; i < types.size(); ++i) {
         json individualSegment = {
-            {       "background",                             colors[0] },
-            {       "foreground",                             "#000000" },
-            {  "leading_diamond",   leading_diamonds[config.dmnd_leading] },
-			{			 "style", 								 "diamond"},
-            {         "template",                            templates[0] },
-            { "trailing_diamond", trailing_diamonds[config.dmnd_trailing] },
-            {             "type",                                types[0] },
+            {       "type",     types[i] },
+            {   "template", templates[i] },
+            {      "style",    "diamond" },
+            { "background",    colors[i] },
+            { "foreground",    "#000000" }
         };
         segmentsJSON.push_back(individualSegment);
+    }
+
+    //^ Now add diamonds based on position
+    if (types.size() == 1) {
+        segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+        segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
     } else {
         for (size_t i = 0; i < types.size(); i++) {
-            // first iteration
-            json individualSegment;
             if (i == 0) {
-                individualSegment = {
-                    {       "background",                                 colors[i] },
-                    {       "foreground",                                 "#000000" },
-                    {  "leading_diamond",     leading_diamonds[config.dmnd_leading] },
-                    {            "style",                                 "diamond" },
-                    {         "template",                              templates[i] },
-                    { "trailing_diamond", trailing_diamonds[config.dmnd_connecting] },
-                    {             "type",                                  types[i] },
-                };
+                segmentsJSON[i]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+				segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+            } else if (i == types.size()-1) {
+                segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
             } else {
-                individualSegment = {
-                    {       "background",                               colors[i] },
-                    {       "foreground",                               "#000000" },
-                    {            "style",                               "diamond" },
-                    {         "template",                            templates[i] },
-                    { "trailing_diamond", trailing_diamonds[config.dmnd_trailing] },
-                    {             "type",                                types[i] },
-                };
-            }
-            segmentsJSON.push_back(individualSegment);
+                segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+			}
         }
     }
 
-    // form our JSON object, starting with just one block that contains an array.
+	//^ Special Properties
+	for (json& segment : segmentsJSON) {
+        if (segment["type"] == "path") {
+			segment["properties"] = { {"style", "folder"} };
+		}
+	}
+
+    //* Form our JSON object, starting with just one block that contains an array.
     json j = {
         { "blocks", json::array() }
     };
 
-    // add schema reference
-    j.push_back({ "$schema", "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json" });
-
-    // push these values to the first block
+    // add hardcoded default stuff
+    j["$schema"] = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json";
+	j["version"] = 1;
+	j["final_space"] = true;
     j["blocks"].push_back({
-		{      "type",     "prompt" },
-		{ "alignment",       "left" },
-		{  "segments", segmentsJSON }
+		{      	"type",     "prompt" },
+		{  "alignment",       "left" },
+		{  	"segments", segmentsJSON },
     });
 
-    // pretty print the JSON into a file with a 4-indent style (basic JSON formatting)
+    // output JSON into a file with a 4-indent style (basic JSON formatting)
     ofstream o("temp.omp.json");
-    o << setw(4) << j << endl;
+    o << j.dump(4);
     o.close();
 }
 
@@ -141,7 +134,6 @@ int main() {
 	auto screen = ScreenInteractive::Fullscreen();
 	int tabSelected = 0;
 	ConfigState config;
-
 
 	//* Content inside each tab
     auto tabChooseBlocks = Container::Vertical({
