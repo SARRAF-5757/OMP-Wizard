@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <ftxui/component/component_base.hpp>
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
@@ -12,7 +14,8 @@ using json = nlohmann::json;
 //^ Struct to hold different user choices
 struct ConfigState {
 	//block choices
-	bool show_dir = false;
+	bool show_user = false;
+	bool show_path = false;
 	bool show_git = false;
     // diamond choices
     int dmnd_leading = 0;
@@ -25,8 +28,7 @@ struct ConfigState {
 //^ List of leading diamond choices (radiobox entries)
 vector<string> leading_diamonds = {
     "\ue0b6",	//left half-circle
-    "\ue0b0",	//left triangle
-    "\uf0c8",	//square
+    "\ue0b2",	//left triangle
 	"\ue0ba",	//left lower slant
 	"\ue0be",	//left upper slant
 	"\ue0c2",	//left fire
@@ -38,16 +40,117 @@ vector<string> leading_diamonds = {
 //^ List of trailing diamond choices (radiobox entries)
 vector<string> trailing_diamonds = {
     "\ue0b4",	//right half-circle
-    "\ue0b2",	//right triangle
-    "\uf0c8",	//square
+    "\ue0b0",	//right triangle
 	"\ue0bc",	//right upper slant
 	"\ue0b8",	//right lower slant
 	"\ue0c0",	//right fire
 	"\ue0c8",	//right shockwave
-	"\e0c6",	//right big square fade
+	"\ue0c6",	//right big square fade
 	"\ue0c4",	//right small square fade
 };
 
+//!--------------------------------------Generate JSON-------------------------------------!//
+void GenerateJSON(const ConfigState& config) {
+    // initialize vector of selected segments, and then formatted JSON segments
+    vector<string> types;
+	vector<string> templates;
+	vector<string> colors;
+    vector<json> segmentsJSON;
+
+    if (config.show_user) {
+		types.emplace_back("session");
+		templates.emplace_back(" {{ .UserName }} ");
+        colors.emplace_back("#BDA5FE");
+    }
+    if (config.show_path) {
+		types.emplace_back("path");
+		templates.emplace_back(" {{ .Path }} ");
+		colors.emplace_back("#539aff");
+	}
+    if (config.show_git) {
+		types.emplace_back("git");
+        templates.emplace_back(" {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }} ");
+		colors.emplace_back("#fffd9c");
+    }
+
+    // First, just create all the segments with their basic properties
+    for (size_t i = 0; i < types.size(); ++i) {
+        json individualSegment = {
+            {       "type",     types[i] },
+            {   "template", templates[i] },
+            {      "style",    "diamond" },
+            { "background",    colors[i] },
+            { "foreground",    "#000000" }
+        };
+        segmentsJSON.push_back(individualSegment);
+    }
+
+	// Now add diamonds based on position
+    size_t segment_count = segmentsJSON.size();
+	
+
+    // format JSON Segments based on selected segments
+    if (types.size() == 1) {
+        json individualSegment = {
+            {       "background",                             colors[0] },
+            {       "foreground",                             "#000000" },
+            {  "leading_diamond",   leading_diamonds[config.dmnd_leading] },
+			{			 "style", 								 "diamond"},
+            {         "template",                            templates[0] },
+            { "trailing_diamond", trailing_diamonds[config.dmnd_trailing] },
+            {             "type",                                types[0] },
+        };
+        segmentsJSON.push_back(individualSegment);
+    } else {
+        for (size_t i = 0; i < types.size(); i++) {
+            // first iteration
+            json individualSegment;
+            if (i == 0) {
+                individualSegment = {
+                    {       "background",                                 colors[i] },
+                    {       "foreground",                                 "#000000" },
+                    {  "leading_diamond",     leading_diamonds[config.dmnd_leading] },
+                    {            "style",                                 "diamond" },
+                    {         "template",                              templates[i] },
+                    { "trailing_diamond", trailing_diamonds[config.dmnd_connecting] },
+                    {             "type",                                  types[i] },
+                };
+            } else {
+                individualSegment = {
+                    {       "background",                               colors[i] },
+                    {       "foreground",                               "#000000" },
+                    {            "style",                               "diamond" },
+                    {         "template",                            templates[i] },
+                    { "trailing_diamond", trailing_diamonds[config.dmnd_trailing] },
+                    {             "type",                                types[i] },
+                };
+            }
+            segmentsJSON.push_back(individualSegment);
+        }
+    }
+
+    // form our JSON object, starting with just one block that contains an array.
+    json j = {
+        { "blocks", json::array() }
+    };
+
+    // add schema reference
+    j.push_back({ "$schema", "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json" });
+
+    // push these values to the first block
+    j["blocks"].push_back({
+		{      "type",     "prompt" },
+		{ "alignment",       "left" },
+		{  "segments", segmentsJSON }
+    });
+
+    // pretty print the JSON into a file with a 4-indent style (basic JSON formatting)
+    ofstream o("temp.omp.json");
+    o << setw(4) << j << endl;
+    o.close();
+}
+
+//!----------------------------------------MAIN----------------------------------------!//
 int main() {
 	//Initialize Stuff
 	auto screen = ScreenInteractive::Fullscreen();
@@ -57,7 +160,8 @@ int main() {
 
 	//* Content inside each tab
     auto tabChooseBlocks = Container::Vertical({
-		Checkbox("Directory Path", &config.show_dir),
+		Checkbox("Show User", &config.show_user),
+		Checkbox("Directory Path", &config.show_path),
 		Checkbox("Git Status", &config.show_git),
 		//TODO: add more block choices
     });
@@ -130,7 +234,7 @@ int main() {
 		if (event == Event::Character('n')) {
 			if(tabSelected < showTabs.size()-1){
 				//if only one block is selected, only offer leading and trailing diamond
-				if(tabSelected == 0 && (config.show_dir ^ config.show_git)){
+				if(tabSelected == 0 && (config.show_path ^ config.show_git)){
                     showTabs.push_back(tabDmndTrailing);
                     tabMessage.push_back(dmndTrailTitle);
                 } else if (tabSelected == 0) {
@@ -143,7 +247,7 @@ int main() {
                 }
 				
 				//stop advancing if no blocks are chosen or if at the last page
-				if ((config.show_dir || config.show_git) && (tabSelected < showTabs.size()-1)) {
+				if ((config.show_path || config.show_git) && (tabSelected < showTabs.size()-1)) {
                     tabSelected = tabSelected + 1;
 					tabContainer = Container::Tab({
 						showTabs,
@@ -154,71 +258,15 @@ int main() {
 			}
 		}
 		if (event == Event::Character('e')) {
-			//TODO: End wizard and generate Json
-            screen.ExitLoopClosure()();	//temp, does the same as quitting
+			GenerateJSON(config);
+            screen.ExitLoopClosure()();
             return true;
         }
         return false;
     });
 
-
     //Loop and render component on the screen
 	screen.Loop(component);
-	cout << "Show Directory Path: " << (config.show_dir ? "Yes" : "No") << endl;
-	cout << "Show Git Status: " << (config.show_git ? "Yes" : "No") << endl;
-
-	// initialize vector of selected segments, and then formatted JSON segments
-	std::vector<std::string> segments;
-	std::vector<json> segmentsJSON;
-	if(config.show_git){
-		segments.push_back("git");
-	}
-
-	if(config.show_dir){
-		segments.push_back("path");
-	}
-
-	// format JSON Segments based on selected segments
-	if(segments.size() == 1){
-		json individualSegment = {
-				{"type", segments[0]},
-				{"leading_diamond", leading_diamonds[config.dmnd_leading]},
-				{"trailing_diamond", trailing_diamonds[config.dmnd_trailing]}
-			};
-		segmentsJSON.push_back(individualSegment);
-	} else {
-		for(size_t i = 0; i < segments.size(); i++){
-			// first iteration 
-			json individualSegment;
-			if (i == 0) {
-				individualSegment = {					
-					{"type", segments[i]},
-					{"leading_diamond", leading_diamonds[config.dmnd_leading]},
-					{"trailing_diamond", trailing_diamonds[config.dmnd_connecting]}
-				};
-			} else {
-				individualSegment = {
-					{"type", segments[i]},
-					{"trailing_diamond", trailing_diamonds[config.dmnd_trailing]}
-				};
-			}
-			segmentsJSON.push_back(individualSegment);
-		}
-	}
-	// form our JSON object, starting with just one block that contains an array.
-	json j = {
-    { "blocks", json::array() }
-	};
-
-	// push these values to the first block
-	j["blocks"].push_back({
-	{ "type", "prompt" },
-	{ "alignment", "left" },
-    { "segments", segmentsJSON }
-	});
-	
-	// print out the JSON file with a 4-indent style (basic JSON formatting)
-	cout << j.dump(4);
 
 	return 0;
 }
