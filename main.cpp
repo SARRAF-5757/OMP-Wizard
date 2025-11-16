@@ -73,21 +73,6 @@ void GenerateJSON(const ConfigState& config) {
 		colors.emplace_back("#fffd9c");
     }
 
-    // First, just create all the segments with their basic properties
-    for (size_t i = 0; i < types.size(); ++i) {
-        json individualSegment = {
-            {       "type",     types[i] },
-            {   "template", templates[i] },
-            {      "style",    "diamond" },
-            { "background",    colors[i] },
-            { "foreground",    "#000000" }
-        };
-        segmentsJSON.push_back(individualSegment);
-    }
-
-	// Now add diamonds based on position
-    size_t segment_count = segmentsJSON.size();
-	
 
     // format JSON Segments based on selected segments
     if (types.size() == 1) {
