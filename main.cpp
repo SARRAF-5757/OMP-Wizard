@@ -166,5 +166,59 @@ int main() {
 	screen.Loop(component);
 	cout << "Show Directory Path: " << (config.show_dir ? "Yes" : "No") << endl;
 	cout << "Show Git Status: " << (config.show_git ? "Yes" : "No") << endl;
+
+	// initialize vector of selected segments, and then formatted JSON segments
+	std::vector<std::string> segments;
+	std::vector<json> segmentsJSON;
+	if(config.show_git){
+		segments.push_back("git");
+	}
+
+	if(config.show_dir){
+		segments.push_back("path");
+	}
+
+	// format JSON Segments based on selected segments
+	if(segments.size() == 1){
+		json individualSegment = {
+				{"type", segments[0]},
+				{"leading_diamond", leading_diamonds[config.dmnd_leading]},
+				{"trailing_diamond", trailing_diamonds[config.dmnd_trailing]}
+			};
+		segmentsJSON.push_back(individualSegment);
+	} else {
+		for(size_t i = 0; i < segments.size(); i++){
+			// first iteration 
+			json individualSegment;
+			if (i == 0) {
+				individualSegment = {					
+					{"type", segments[i]},
+					{"leading_diamond", leading_diamonds[config.dmnd_leading]},
+					{"trailing_diamond", trailing_diamonds[config.dmnd_connecting]}
+				};
+			} else {
+				individualSegment = {
+					{"type", segments[i]},
+					{"trailing_diamond", trailing_diamonds[config.dmnd_trailing]}
+				};
+			}
+			segmentsJSON.push_back(individualSegment);
+		}
+	}
+	// form our JSON object, starting with just one block that contains an array.
+	json j = {
+    { "blocks", json::array() }
+	};
+
+	// push these values to the first block
+	j["blocks"].push_back({
+	{ "type", "prompt" },
+	{ "alignment", "left" },
+    { "segments", segmentsJSON }
+	});
+	
+	// print out the JSON file with a 4-indent style (basic JSON formatting)
+	cout << j.dump(4);
+
 	return 0;
 }
