@@ -78,7 +78,7 @@ void GenerateJSON(const ConfigState& config) {
             {   "template", templates[i] },
             {      "style",    "diamond" },
             { "background",    colors[i] },
-            { "foreground",    "#000000" }
+            { "foreground",  "#000000" }
         };
         segmentsJSON.push_back(individualSegment);
     }
@@ -104,6 +104,13 @@ void GenerateJSON(const ConfigState& config) {
 	for (json& segment : segmentsJSON) {
         if (segment["type"] == "path") {
 			segment["properties"] = { {"style", "folder"} };
+		}
+		if (segment["type"] == "git") {
+			segment["properties"] = {
+				{ 		 "branch_icon", " \ue725 " },
+				{		"fetch_status", 	 true },
+				{"fetch_upstream_icon", 	 true }
+			};
 		}
 	}
 
