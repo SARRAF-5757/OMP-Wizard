@@ -11,16 +11,32 @@ using namespace std;
 using namespace ftxui;
 using json = nlohmann::json;
 
+// rgb color struct
+struct rgb {
+    int red = 128;
+    int green = 25;
+    int blue = 100;
+};
+
 //^ Struct to hold different user choices
 struct ConfigState {
     // block choices
     bool show_user = false;
     bool show_path = false;
     bool show_git = false;
+    // block colors
+    string color_user = "#FFFFFF";
+    string color_path = "#FFFFFF";
+    string color_git = "#FFFFFF";
     // diamond choices
     int dmnd_leading = 0;
     int dmnd_connecting = 0;
     int dmnd_trailing = 0;
+
+    // colors
+    rgb user_color;
+    rgb path_color;
+    rgb git_color;
 };
 
 // Dictionary of diamonds for human-readable usage throughout the code
@@ -67,6 +83,37 @@ vector<string> trailing_diamonds = {
     "\ue0c6",   // right big square fade
     "\ue0c4",   // right small square fade
 };
+
+// Helper to convert rgba values to HEX codes
+string RGBtoHex(int r, int g, int b) {
+    stringstream ss;
+    ss << "#" << hex << setfill('0') << setw(2) << r << setw(2) << g << setw(2) << b;
+    return ss.str();
+}
+
+// To create tab components for color selector tabs
+Component colorPicker(rgb* rgbValues) {
+    auto slider_r = Slider("Red   :", &rgbValues->red, 0, 255, 1);
+    auto slider_g = Slider("Green :", &rgbValues->green, 0, 255, 1);
+    auto slider_b = Slider("Blue  :", &rgbValues->blue, 0, 255, 1);
+
+    auto layout = Container::Vertical({ slider_r, slider_g, slider_b });
+
+    return Renderer(layout, [=] {
+        auto preview = text("   COLOR   ") | bgcolor(Color::RGB(rgbValues->red, rgbValues->green, rgbValues->blue))
+                     | color(Color::Black);
+        string hex = RGBtoHex(rgbValues->red, rgbValues->green, rgbValues->blue);
+
+        // the size() options are necessary to make it wide enough.
+        // or else it shrinks it too much (possibly cuz of hcenter in the main renderer)
+        return hbox({ preview, separator(),
+                      vbox({ slider_r->Render(), slider_g->Render(), slider_b->Render(), separator(),
+                             text("Hex: " + hex) })
+                        | size(WIDTH, GREATER_THAN, 30) })
+             | border | size(WIDTH, GREATER_THAN, 30);
+    });
+}
+
 
 //!--------------------------------------Generate JSON-------------------------------------!//
 void GenerateJSON(const ConfigState& config) {
@@ -194,6 +241,14 @@ int main() {
       .selected = &config.dmnd_trailing,
     });
 
+    string userColorTitle = "pick a color for your user block";
+    auto tabUserColor = colorPicker(&config.user_color);
+
+    string dirColorTitle = "pick a color for your directory block";
+    auto tabDirColor = colorPicker(&config.path_color);
+
+    string gitColorTitle = "pick a color for your git block";
+    auto tabGitColor = colorPicker(&config.git_color);
 
     //^ Vectors to switch contents among tabs (preloaded with first two screens)
     // Vector of components representing each tab
@@ -237,7 +292,7 @@ int main() {
         if (event == Event::Character('n')) {
             if (tabSelected < showTabs.size() - 1) {
                 // if only one block is selected, only offer leading and trailing diamond
-                if (tabSelected == 0 && (config.show_path ^ config.show_git)) {
+                if (tabSelected == 0 && (config.show_user + config.show_path + config.show_git == 1)) {
                     showTabs.push_back(tabDmndTrailing);
                     tabMessage.push_back(dmndTrailTitle);
                 } else if (tabSelected == 0) {
@@ -247,6 +302,19 @@ int main() {
 
                     showTabs.push_back(tabDmndTrailing);
                     tabMessage.push_back(dmndTrailTitle);
+                }
+
+                if (config.show_user) {
+                    showTabs.push_back(tabUserColor);
+                    tabMessage.push_back(userColorTitle);
+                }
+                if (config.show_path) {
+                    showTabs.push_back(tabDirColor);
+                    tabMessage.push_back(dirColorTitle);
+                }
+                if (config.show_git) {
+                    showTabs.push_back(tabGitColor);
+                    tabMessage.push_back(gitColorTitle);
                 }
 
                 // stop advancing if no blocks are chosen or if at the last page
