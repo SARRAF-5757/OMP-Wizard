@@ -92,17 +92,17 @@ string RGBtoHex(int r, int g, int b) {
 }
 
 // To create tab components for color selector tabs
-Component colorPicker(rgb* rgbValues) {
+Component colorPicker(rgb* rgbValues, string& hex) {
     auto slider_r = Slider("Red   :", &rgbValues->red, 0, 255, 1);
     auto slider_g = Slider("Green :", &rgbValues->green, 0, 255, 1);
     auto slider_b = Slider("Blue  :", &rgbValues->blue, 0, 255, 1);
 
     auto layout = Container::Vertical({ slider_r, slider_g, slider_b });
 
-    return Renderer(layout, [=] {
+    return Renderer(layout, [=, &hex] {
         auto preview = text("   COLOR   ") | bgcolor(Color::RGB(rgbValues->red, rgbValues->green, rgbValues->blue))
                      | color(Color::Black);
-        string hex = RGBtoHex(rgbValues->red, rgbValues->green, rgbValues->blue);
+        hex = RGBtoHex(rgbValues->red, rgbValues->green, rgbValues->blue);
 
         // the size() options are necessary to make it wide enough.
         // or else it shrinks it too much (possibly cuz of hcenter in the main renderer)
@@ -126,12 +126,12 @@ void GenerateJSON(const ConfigState& config) {
     if (config.show_user) {
         types.emplace_back("session");
         templates.emplace_back(" {{ .UserName }} ");
-        colors.emplace_back("#BDA5FE");
+        colors.push_back(config.color_user);
     }
     if (config.show_path) {
         types.emplace_back("path");
         templates.emplace_back(" \ue5ff {{ .Path }} ");
-        colors.emplace_back("#539aff");
+        colors.push_back(config.color_path);
     }
     if (config.show_git) {
         types.emplace_back("git");
@@ -140,7 +140,7 @@ void GenerateJSON(const ConfigState& config) {
           "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
           ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
           "}}{{ end }} ");
-        colors.emplace_back("#fffd9c");
+        colors.push_back(config.color_git);
     }
 
     //^ First, just create all the segments with their basic properties
@@ -242,13 +242,13 @@ int main() {
     });
 
     string userColorTitle = "pick a color for your user block";
-    auto tabUserColor = colorPicker(&config.user_color);
+    auto tabUserColor = colorPicker(&config.user_color, config.color_user);
 
     string dirColorTitle = "pick a color for your directory block";
-    auto tabDirColor = colorPicker(&config.path_color);
+    auto tabDirColor = colorPicker(&config.path_color, config.color_path);
 
     string gitColorTitle = "pick a color for your git block";
-    auto tabGitColor = colorPicker(&config.git_color);
+    auto tabGitColor = colorPicker(&config.git_color, config.color_git);
 
     //^ Vectors to switch contents among tabs (preloaded with first two screens)
     // Vector of components representing each tab
