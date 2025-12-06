@@ -13,12 +13,12 @@ using json = nlohmann::json;
 
 // rgb color struct
 struct rgb {
-    int red = 128;
-    int green = 25;
-    int blue = 100;
+    int red = 156;
+    int green = 115;
+    int blue = 254;
 };
 
-//^ Struct to hold different user choices
+//* Struct to hold different user choices
 struct ConfigState {
     // block choices
     bool show_user = false;
@@ -32,6 +32,8 @@ struct ConfigState {
     int dmnd_leading = 0;
     int dmnd_connecting = 0;
     int dmnd_trailing = 0;
+    // misc options
+    int tr_prompt = 0;
 
     // colors
     rgb user_color;
@@ -39,7 +41,7 @@ struct ConfigState {
     rgb git_color;
 };
 
-// Dictionary of diamonds for human-readable usage throughout the code
+//* Dictionary of diamonds for human-readable usage throughout the code
 map<string, string> symbols = {
     {   "lCirc", "\ue0b6" },
     {   "rCirc", "\ue0b4" },
@@ -60,7 +62,7 @@ map<string, string> symbols = {
 };
 
 
-//^ List of leading diamond choices (radiobox entries)
+//* List of leading diamond choices (radiobox entries)
 vector<string> leading_diamonds = {
     "\ue0b6",   // left half-circle
     "\ue0b2",   // left triangle
@@ -72,7 +74,7 @@ vector<string> leading_diamonds = {
     "\ue0c5",   // left small square fade
 };
 
-//^ List of trailing diamond choices (radiobox entries)
+//* List of trailing diamond choices (radiobox entries)
 vector<string> trailing_diamonds = {
     "\ue0b4",   // right half-circle
     "\ue0b0",   // right triangle
@@ -84,14 +86,19 @@ vector<string> trailing_diamonds = {
     "\ue0c4",   // right small square fade
 };
 
-// Helper to convert rgba values to HEX codes
+//* For all miscellaneous options
+vector<string> boolean_choice = { "Yes", "No" };
+
+
+//!--------------------------------------Hlper Functions-------------------------------------!//
+//@ Helper to convert rgba values to HEX codes
 string RGBtoHex(int r, int g, int b) {
     stringstream ss;
     ss << "#" << hex << setfill('0') << setw(2) << r << setw(2) << g << setw(2) << b;
     return ss.str();
 }
 
-// To create tab components for color selector tabs
+//@ To create tab components for color selector tabs
 Component colorPicker(rgb* rgbValues, string& hex) {
     auto slider_r = Slider("Red   :", &rgbValues->red, 0, 255, 1);
     auto slider_g = Slider("Green :", &rgbValues->green, 0, 255, 1);
@@ -117,7 +124,7 @@ Component colorPicker(rgb* rgbValues, string& hex) {
 
 //!--------------------------------------Generate JSON-------------------------------------!//
 void GenerateJSON(const ConfigState& config) {
-    // initialize vectors of segment properties and populate them based on selected segments
+    //? Initialize vectors of segment properties and populate them based on selected segments
     vector<string> types;
     vector<string> templates;
     vector<string> colors;
@@ -143,7 +150,7 @@ void GenerateJSON(const ConfigState& config) {
         colors.push_back(config.color_git);
     }
 
-    //^ First, just create all the segments with their basic properties
+    //? First, just create all the segments with their basic properties
     for (size_t i = 0; i < types.size(); ++i) {
         json individualSegment = {
             {       "type",     types[i] },
@@ -155,7 +162,7 @@ void GenerateJSON(const ConfigState& config) {
         segmentsJSON.push_back(individualSegment);
     }
 
-    //^ Now add diamonds based on position
+    //? Now add diamonds based on position
     if (types.size() == 1) {
         segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
         segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
@@ -172,7 +179,7 @@ void GenerateJSON(const ConfigState& config) {
         }
     }
 
-    //^ Special Properties
+    //? Special Properties
     for (json& segment : segmentsJSON) {
         if (segment["type"] == "path") {
             segment["properties"] = {
@@ -188,7 +195,7 @@ void GenerateJSON(const ConfigState& config) {
         }
     }
 
-    //* Form our JSON object, starting with just one block that contains an array.
+    //? Form our JSON object, starting with just one block that contains an array.
     json j = {
         { "blocks", json::array() }
     };
@@ -203,6 +210,15 @@ void GenerateJSON(const ConfigState& config) {
       {  "segments", segmentsJSON },
     });
 
+    //? add optional miscellaneous settings
+    if (config.tr_prompt) {
+        j["transient_prompt"] = {
+            {   "template",     "\ue285 " },
+            { "foreground",     "#AB76D9" },
+            { "background", "transparent" }
+        };
+    }
+
     // output JSON into a file with a 4-indent style (basic JSON formatting)
     ofstream o("temp.omp.json");
     o << j.dump(4);
@@ -216,7 +232,7 @@ int main() {
     int tabSelected = 0;
     ConfigState config;
 
-    //* Content inside each tab
+    //* Define content inside each tab
     auto tabChooseBlocks = Container::Vertical({
       Checkbox("Show User", &config.show_user),
       Checkbox("Directory Path", &config.show_path),
@@ -224,6 +240,7 @@ int main() {
       // TODO: add more block choices
     });
 
+    // # Block slection based pages
     auto tabDmndLeading = Radiobox({
       .entries = leading_diamonds,
       .selected = &config.dmnd_leading,
@@ -250,7 +267,15 @@ int main() {
     string gitColorTitle = "pick a color for your git block";
     auto tabGitColor = colorPicker(&config.git_color, config.color_git);
 
-    //^ Vectors to switch contents among tabs (preloaded with first two screens)
+    // # Pages to show always
+    string trPromptTitle = "Do you want to show your full prompt after a command execution has completed?";
+    auto tabTrPrompt = Radiobox({
+      .entries = boolean_choice,
+      .selected = &config.tr_prompt,
+    });
+
+
+    //* Vectors to switch contents among tabs (preloaded with first two screens)
     // Vector of components representing each tab
     vector<Component> showTabs = { tabChooseBlocks, tabDmndLeading };
     // Titles shown on each screens
@@ -283,6 +308,7 @@ int main() {
              | vcenter;
     });
 
+    //* Catch keypresses
     // To catch 'q' keypress to exit wizard
     auto component = CatchEvent(toRender, [&](Event event) {
         if (event == Event::Character('q')) {
@@ -316,6 +342,10 @@ int main() {
                     showTabs.push_back(tabGitColor);
                     tabMessage.push_back(gitColorTitle);
                 }
+
+                // # add these options unconditionally (regardless of # of blocks selected)
+                showTabs.push_back(tabTrPrompt);
+                tabMessage.push_back(trPromptTitle);
 
                 // stop advancing if no blocks are chosen or if at the last page
                 if ((config.show_path || config.show_git) && (tabSelected < showTabs.size() - 1)) {
