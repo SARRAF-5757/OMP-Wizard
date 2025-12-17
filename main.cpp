@@ -11,7 +11,7 @@ using namespace std;
 using namespace ftxui;
 using json = nlohmann::json;
 
-// rgb color struct
+// rgb color struct (defaults to light purple)
 struct rgb {
     int red = 156;
     int green = 115;
@@ -25,6 +25,7 @@ struct ConfigState {
     bool show_path = false;
     bool show_git = false;
     // block colors
+    string color_bgfg = "transparent";   // background or foreground color depending on color mode
     string color_user = "#FFFFFF";
     string color_path = "#FFFFFF";
     string color_git = "#FFFFFF";
@@ -34,8 +35,10 @@ struct ConfigState {
     int dmnd_trailing = 0;
     // misc options
     int tr_prompt = 0;
+    int color_mode = 0;
 
     // colors
+    rgb bgfg_color;
     rgb user_color;
     rgb path_color;
     rgb git_color;
@@ -86,8 +89,9 @@ vector<string> trailing_diamonds = {
     "\ue0c4",   // right small square fade
 };
 
-//* For all miscellaneous options
+//* For miscellaneous options
 vector<string> boolean_choice = { "Yes", "No" };
+vector<string> color_mode_choices = { "Colored Background", "Colored Text", "Colored Text with Monochrome Background" };
 
 
 //!--------------------------------------Hlper Functions-------------------------------------!//
@@ -151,15 +155,40 @@ void GenerateJSON(const ConfigState& config) {
     }
 
     //? First, just create all the segments with their basic properties
-    for (size_t i = 0; i < types.size(); ++i) {
-        json individualSegment = {
-            {       "type",     types[i] },
-            {   "template", templates[i] },
-            {      "style",    "diamond" },
-            { "background",    colors[i] },
-            { "foreground",    "#000000" }
-        };
-        segmentsJSON.push_back(individualSegment);
+    // swap where color goes based on color mode
+    if (config.color_mode == 0) {
+        for (size_t i = 0; i < types.size(); ++i) {
+            json individualSegment = {
+                {       "type",          types[i] },
+                {   "template",      templates[i] },
+                {      "style",         "diamond" },
+                { "background",         colors[i] },
+                { "foreground", config.color_bgfg }
+            };
+            segmentsJSON.push_back(individualSegment);
+        }
+    } else if (config.color_mode == 1) {
+        for (size_t i = 0; i < types.size(); ++i) {
+            json individualSegment = {
+                {       "type",      types[i] },
+                {   "template",  templates[i] },
+                {      "style",     "diamond" },
+                { "background", "transparent" },
+                { "foreground",     colors[i] }
+            };
+            segmentsJSON.push_back(individualSegment);
+        }
+    } else {
+        for (size_t i = 0; i < types.size(); ++i) {
+            json individualSegment = {
+                {       "type",          types[i] },
+                {   "template",      templates[i] },
+                {      "style",         "diamond" },
+                { "background", config.color_bgfg },
+                { "foreground",         colors[i] }
+            };
+            segmentsJSON.push_back(individualSegment);
+        }
     }
 
     //? Now add diamonds based on position
@@ -231,8 +260,10 @@ int main() {
     auto screen = ScreenInteractive::Fullscreen();
     int tabSelected = 0;
     ConfigState config;
+    bool tabsAdded = false;
 
     //* Define content inside each tab
+    string blocksTitle = "Choose Components to Show in your Prompt";
     auto tabChooseBlocks = Container::Vertical({
       Checkbox("Show User", &config.show_user),
       Checkbox("Directory Path", &config.show_path),
@@ -240,7 +271,21 @@ int main() {
       // TODO: add more block choices
     });
 
+    string colorModeTitle = "How should the prompt be colorized?";
+    auto tabColorMode = Radiobox({
+      .entries = color_mode_choices,
+      .selected = &config.color_mode,
+    });
+
+    string trPromptTitle
+      = "Transient Prompt\nDo you want to show your full prompt after a command execution has completed?";
+    auto tabTrPrompt = Radiobox({
+      .entries = boolean_choice,
+      .selected = &config.tr_prompt,
+    });
+
     // # Block slection based pages
+    string dmndLeadTitle = "Choose Leading Diamond to Show in your Prompt";
     auto tabDmndLeading = Radiobox({
       .entries = leading_diamonds,
       .selected = &config.dmnd_leading,
@@ -258,29 +303,22 @@ int main() {
       .selected = &config.dmnd_trailing,
     });
 
-    string userColorTitle = "pick a color for your user block";
+    string bgfgTitle = "Pick a background color (monochrome mode)/foreground color (colored background mode)";
+    auto tabBgfg = colorPicker(&config.bgfg_color, config.color_bgfg);
+
+    string userColorTitle = "Pick a color for your user block";
     auto tabUserColor = colorPicker(&config.user_color, config.color_user);
 
-    string dirColorTitle = "pick a color for your directory block";
+    string dirColorTitle = "Pick a color for your directory block";
     auto tabDirColor = colorPicker(&config.path_color, config.color_path);
 
-    string gitColorTitle = "pick a color for your git block";
+    string gitColorTitle = "Pick a color for your git block";
     auto tabGitColor = colorPicker(&config.git_color, config.color_git);
-
-    // # Pages to show always
-    string trPromptTitle = "Do you want to show your full prompt after a command execution has completed?";
-    auto tabTrPrompt = Radiobox({
-      .entries = boolean_choice,
-      .selected = &config.tr_prompt,
-    });
 
 
     //* Vectors to switch contents among tabs (preloaded with first two screens)
-    // Vector of components representing each tab
-    vector<Component> showTabs = { tabChooseBlocks, tabDmndLeading };
-    // Titles shown on each screens
-    vector<string> tabMessage
-      = { "Choose Components to Show in your Prompt", "Choose Leading Diamond to Show in your Prompt" };
+    vector<Component> showTabs = { tabChooseBlocks, tabColorMode };   // Vector of components representing each tab
+    vector<string> tabMessage = { blocksTitle, colorModeTitle };      // Titles shown on each screens
 
 
     // Container of the differing tab blocks
@@ -315,14 +353,21 @@ int main() {
             screen.ExitLoopClosure()();
             return true;
         }
+
         if (event == Event::Character('n')) {
-            if (tabSelected < showTabs.size() - 1) {
+            // only add the rest of the tabs once, while on block selection (index 0) page
+            if (tabSelected == 0) {
                 // if only one block is selected, only offer leading and trailing diamond
                 if (tabSelected == 0 && (config.show_user + config.show_path + config.show_git == 1)) {
+                    showTabs.push_back(tabDmndLeading);
+                    tabMessage.push_back(dmndLeadTitle);
+
                     showTabs.push_back(tabDmndTrailing);
                     tabMessage.push_back(dmndTrailTitle);
                 } else if (tabSelected == 0) {
-                    // if multiple blocks are choosen, show all diamond choices
+                    showTabs.push_back(tabDmndLeading);
+                    tabMessage.push_back(dmndLeadTitle);
+
                     showTabs.push_back(tabDmndConnecting);
                     tabMessage.push_back(dmndConnectTitle);
 
@@ -330,35 +375,44 @@ int main() {
                     tabMessage.push_back(dmndTrailTitle);
                 }
 
-                if (config.show_user) {
-                    showTabs.push_back(tabUserColor);
-                    tabMessage.push_back(userColorTitle);
-                }
-                if (config.show_path) {
-                    showTabs.push_back(tabDirColor);
-                    tabMessage.push_back(dirColorTitle);
-                }
-                if (config.show_git) {
-                    showTabs.push_back(tabGitColor);
-                    tabMessage.push_back(gitColorTitle);
+                if (config.color_mode == 0 || config.color_mode == 2) {
+                    if (config.show_user) {
+                        showTabs.push_back(tabUserColor);
+                        tabMessage.push_back(userColorTitle);
+                    }
+                    if (config.show_path) {
+                        showTabs.push_back(tabDirColor);
+                        tabMessage.push_back(dirColorTitle);
+                    }
+                    if (config.show_git) {
+                        showTabs.push_back(tabGitColor);
+                        tabMessage.push_back(gitColorTitle);
+                    }
                 }
 
-                // # add these options unconditionally (regardless of # of blocks selected)
+                showTabs.push_back(tabBgfg);
+                tabMessage.push_back(bgfgTitle);
+
                 showTabs.push_back(tabTrPrompt);
                 tabMessage.push_back(trPromptTitle);
-
-                // stop advancing if no blocks are chosen or if at the last page
-                if ((config.show_path || config.show_git) && (tabSelected < showTabs.size() - 1)) {
-                    tabSelected = tabSelected + 1;
-                    tabContainer = Container::Tab(
-                      {
-                        showTabs,
-                      },
-                      &tabSelected);
-                    container->DetachAllChildren();
-                    container->Add(tabContainer);
-                }
             }
+
+            // stop advancing if no blocks are chosen or if at the last page
+            if ((config.show_path || config.show_git) && (tabSelected < showTabs.size() - 1)) {
+                tabContainer = Container::Tab(
+                  {
+                    showTabs,
+                  },
+                  &tabSelected);
+                container->DetachAllChildren();
+                container->Add(tabContainer);
+            }
+
+            if (tabSelected >= showTabs.size() - 1) {
+                return true;
+            }
+
+            tabSelected++;
         }
         if (event == Event::Character('e')) {
             GenerateJSON(config);
