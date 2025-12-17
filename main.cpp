@@ -39,11 +39,11 @@ struct ConfigState {
     int color_mode = 0;
 
     // colors
-    rgb fg_color;
-    rgb bg_color;
-    rgb user_color;
-    rgb path_color;
-    rgb git_color;
+    rgb fg_color = { 0, 0, 0 };
+    rgb bg_color = { 18, 19, 20 };
+    rgb user_color = { 171, 118, 217 };
+    rgb path_color = { 130, 170, 255 };
+    rgb git_color = { 255, 223, 109 };
 };
 
 //* Dictionary of diamonds for human-readable usage throughout the code
