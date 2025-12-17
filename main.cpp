@@ -25,7 +25,8 @@ struct ConfigState {
     bool show_path = false;
     bool show_git = false;
     // block colors
-    string color_bgfg = "transparent";   // background or foreground color depending on color mode
+    string color_fg = "transparent";
+    string color_bg = "#000000";
     string color_user = "#FFFFFF";
     string color_path = "#FFFFFF";
     string color_git = "#FFFFFF";
@@ -38,7 +39,8 @@ struct ConfigState {
     int color_mode = 0;
 
     // colors
-    rgb bgfg_color;
+    rgb fg_color;
+    rgb bg_color;
     rgb user_color;
     rgb path_color;
     rgb git_color;
@@ -90,8 +92,9 @@ vector<string> trailing_diamonds = {
 };
 
 //* For miscellaneous options
-vector<string> boolean_choice = { "Yes", "No" };
-vector<string> color_mode_choices = { "Colored Background", "Colored Text", "Colored Text with Monochrome Background" };
+vector<string> boolean_choice = { "No", "Yes" };
+vector<string> color_mode_choices
+  = { "Colored Background", "Colored Text (Transparent Background)", "Colored Text (Monochrome Background)" };
 
 
 //!--------------------------------------Hlper Functions-------------------------------------!//
@@ -159,11 +162,11 @@ void GenerateJSON(const ConfigState& config) {
     if (config.color_mode == 0) {
         for (size_t i = 0; i < types.size(); ++i) {
             json individualSegment = {
-                {       "type",          types[i] },
-                {   "template",      templates[i] },
-                {      "style",         "diamond" },
-                { "background",         colors[i] },
-                { "foreground", config.color_bgfg }
+                {       "type",        types[i] },
+                {   "template",    templates[i] },
+                {      "style",       "diamond" },
+                { "background",       colors[i] },
+                { "foreground", config.color_fg }
             };
             segmentsJSON.push_back(individualSegment);
         }
@@ -181,11 +184,11 @@ void GenerateJSON(const ConfigState& config) {
     } else {
         for (size_t i = 0; i < types.size(); ++i) {
             json individualSegment = {
-                {       "type",          types[i] },
-                {   "template",      templates[i] },
-                {      "style",         "diamond" },
-                { "background", config.color_bgfg },
-                { "foreground",         colors[i] }
+                {       "type",        types[i] },
+                {   "template",    templates[i] },
+                {      "style",       "diamond" },
+                { "background", config.color_bg },
+                { "foreground",       colors[i] }
             };
             segmentsJSON.push_back(individualSegment);
         }
@@ -240,7 +243,7 @@ void GenerateJSON(const ConfigState& config) {
     });
 
     //? add optional miscellaneous settings
-    if (config.tr_prompt) {
+    if (!config.tr_prompt) {
         j["transient_prompt"] = {
             {   "template",     "\ue285 " },
             { "foreground",     "#AB76D9" },
@@ -278,7 +281,7 @@ int main() {
     });
 
     string trPromptTitle
-      = "Transient Prompt\nDo you want to show your full prompt after a command execution has completed?";
+      = "Transient Prompt: Do you want to show your full prompt after a command execution has completed?";
     auto tabTrPrompt = Radiobox({
       .entries = boolean_choice,
       .selected = &config.tr_prompt,
@@ -303,8 +306,11 @@ int main() {
       .selected = &config.dmnd_trailing,
     });
 
-    string bgfgTitle = "Pick a background color (monochrome mode)/foreground color (colored background mode)";
-    auto tabBgfg = colorPicker(&config.bgfg_color, config.color_bgfg);
+    string fgTitle = "Pick a text color";
+    auto tabFg = colorPicker(&config.fg_color, config.color_fg);
+
+    string bgTitle = "Pick a background color";
+    auto tabBg = colorPicker(&config.bg_color, config.color_bg);
 
     string userColorTitle = "Pick a color for your user block";
     auto tabUserColor = colorPicker(&config.user_color, config.color_user);
@@ -355,50 +361,63 @@ int main() {
         }
 
         if (event == Event::Character('n')) {
-            // only add the rest of the tabs once, while on block selection (index 0) page
+            // don't advance if no block is selected
             if (tabSelected == 0) {
-                // if only one block is selected, only offer leading and trailing diamond
-                if (tabSelected == 0 && (config.show_user + config.show_path + config.show_git == 1)) {
-                    showTabs.push_back(tabDmndLeading);
-                    tabMessage.push_back(dmndLeadTitle);
+                // don't advance if no block is selected
+                if (!(config.show_user || config.show_path || config.show_git)) {
+                    return true;
+                }
+            }
 
-                    showTabs.push_back(tabDmndTrailing);
-                    tabMessage.push_back(dmndTrailTitle);
-                } else if (tabSelected == 0) {
-                    showTabs.push_back(tabDmndLeading);
-                    tabMessage.push_back(dmndLeadTitle);
+            // only add the rest of the tabs once, while on block selection (index 0) page
+            if (tabSelected == 1) {
+                // only offer diamonds on colored background mode
+                if (config.color_mode == 0) {
+                    // if more two+ blocks, then offer a connecting diamond as well
+                    if (config.show_user + config.show_path + config.show_git == 1) {
+                        showTabs.push_back(tabDmndLeading);
+                        tabMessage.push_back(dmndLeadTitle);
 
-                    showTabs.push_back(tabDmndConnecting);
-                    tabMessage.push_back(dmndConnectTitle);
+                        showTabs.push_back(tabDmndTrailing);
+                        tabMessage.push_back(dmndTrailTitle);
+                    } else {
+                        showTabs.push_back(tabDmndLeading);
+                        tabMessage.push_back(dmndLeadTitle);
 
-                    showTabs.push_back(tabDmndTrailing);
-                    tabMessage.push_back(dmndTrailTitle);
+                        showTabs.push_back(tabDmndConnecting);
+                        tabMessage.push_back(dmndConnectTitle);
+
+                        showTabs.push_back(tabDmndTrailing);
+                        tabMessage.push_back(dmndTrailTitle);
+                    }
+                    // only add text color option if colored background mode is selected
+                    showTabs.push_back(tabFg);
+                    tabMessage.push_back(fgTitle);
                 }
 
-                if (config.color_mode == 0 || config.color_mode == 2) {
-                    if (config.show_user) {
-                        showTabs.push_back(tabUserColor);
-                        tabMessage.push_back(userColorTitle);
-                    }
-                    if (config.show_path) {
-                        showTabs.push_back(tabDirColor);
-                        tabMessage.push_back(dirColorTitle);
-                    }
-                    if (config.show_git) {
-                        showTabs.push_back(tabGitColor);
-                        tabMessage.push_back(gitColorTitle);
-                    }
+                // only add background color option if monochrome mode is selected
+                if (config.color_mode == 2) {
+                    showTabs.push_back(tabBg);
+                    tabMessage.push_back(bgTitle);
                 }
 
-                showTabs.push_back(tabBgfg);
-                tabMessage.push_back(bgfgTitle);
+                if (config.show_user) {
+                    showTabs.push_back(tabUserColor);
+                    tabMessage.push_back(userColorTitle);
+                }
+                if (config.show_path) {
+                    showTabs.push_back(tabDirColor);
+                    tabMessage.push_back(dirColorTitle);
+                }
+                if (config.show_git) {
+                    showTabs.push_back(tabGitColor);
+                    tabMessage.push_back(gitColorTitle);
+                }
 
                 showTabs.push_back(tabTrPrompt);
                 tabMessage.push_back(trPromptTitle);
-            }
 
-            // stop advancing if no blocks are chosen or if at the last page
-            if ((config.show_path || config.show_git) && (tabSelected < showTabs.size() - 1)) {
+                // rebuild container
                 tabContainer = Container::Tab(
                   {
                     showTabs,
@@ -408,6 +427,7 @@ int main() {
                 container->Add(tabContainer);
             }
 
+            // stop advancing if at the last page
             if (tabSelected >= showTabs.size() - 1) {
                 return true;
             }
