@@ -37,6 +37,7 @@ struct ConfigState {
     // misc options
     int tr_prompt = 0;
     int color_mode = 0;
+    int title_mode = 0;
 
     // colors
     rgb fg_color = { 0, 0, 0 };
@@ -95,6 +96,8 @@ vector<string> trailing_diamonds = {
 vector<string> boolean_choice = { "No", "Yes" };
 vector<string> color_mode_choices
   = { "Colored Background", "Colored Text (Transparent Background)", "Colored Text (Monochrome Background)" };
+vector<string> title_choices
+  = { "Default", "Current folder", "Parent folder/current folder", "Full Path", "'Shell' in 'Full Path'" };
 
 
 //!--------------------------------------Hlper Functions-------------------------------------!//
@@ -214,12 +217,12 @@ void GenerateJSON(const ConfigState& config) {
     //? Special Properties
     for (json& segment : segmentsJSON) {
         if (segment["type"] == "path") {
-            segment["properties"] = {
+            segment["options"] = {
                 { "style", "folder" }
             };
         }
         if (segment["type"] == "git") {
-            segment["properties"] = {
+            segment["options"] = {
                 {         "branch_icon", " \ue725 " },
                 {        "fetch_status",       true },
                 { "fetch_upstream_icon",       true }
@@ -251,8 +254,18 @@ void GenerateJSON(const ConfigState& config) {
         };
     }
 
+    if (config.title_mode == 1) {
+        j["console_title_template"] = "{{ .Folder }}";
+    } else if (config.title_mode == 2) {
+        j["console_title_template"] = "{{ base (dir .PWD)}}/{{ .Folder }}";
+    } else if (config.title_mode == 3) {
+        j["console_title_template"] = "{{ .PWD }}";
+    } else if (config.title_mode == 4) {
+        j["console_title_template"] = "{{ .Shell }} in {{ .PWD }}";
+    }
+
     // output JSON into a file with a 4-indent style (basic JSON formatting)
-    ofstream o("temp.omp.json");
+    ofstream o("generated-theme.omp.json");
     o << j.dump(4);
     o.close();
 }
@@ -285,6 +298,12 @@ int main() {
     auto tabTrPrompt = Radiobox({
       .entries = boolean_choice,
       .selected = &config.tr_prompt,
+    });
+
+    string titleTitle = "What should the terminal tab titles look like?";
+    auto tabTitle = Radiobox({
+      .entries = title_choices,
+      .selected = &config.title_mode,
     });
 
     // # Block slection based pages
@@ -416,6 +435,9 @@ int main() {
 
                 showTabs.push_back(tabTrPrompt);
                 tabMessage.push_back(trPromptTitle);
+
+                showTabs.push_back(tabTitle);
+                tabMessage.push_back(titleTitle);
 
                 // rebuild container
                 tabContainer = Container::Tab(

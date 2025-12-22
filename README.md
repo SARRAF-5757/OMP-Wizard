@@ -21,11 +21,12 @@ This is a visual wizard to help users set up and customize their [Oh-My-Posh](ht
 - [x] Color Picker
 - [x] Transient Prompt support
 - [x] Transient Prompt customization
-- [ ] Tab title customization
+- [x] Tab title customization
 - [ ] Live render of prompt's current customization progress
 - [ ] Agnoster support for path block
 - [ ] Icon-less mode
 - [ ] Advanced Mode
+- [ ] Windows & Linux support
 - [ ] More customization!
 
 # Build your own binary
@@ -44,4 +45,3 @@ This is a visual wizard to help users set up and customize their [Oh-My-Posh](ht
 - Find [Diamonds](https://www.nerdfonts.com/cheat-sheet)
   - [Powerline symbols](https://github.com/ryanoasis/powerline-extra-symbols/raw/master/img/fontforge.png)
   - To check what a diamond looks like, run `print '\u[hex code for icon]'` in the terminal (`\uef4d` for example)
-

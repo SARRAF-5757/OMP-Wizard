@@ -33,7 +33,7 @@ set_target_properties(omp-wizard PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BIN
 # Debug build
 add_executable(omp-wizard_debug main.cpp)
 target_compile_options(omp-wizard_debug PRIVATE -g -O0)
-set_target_properties(omp-wizard_debug PROPERTIES 
+set_target_properties(omp-wizard_debug PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
     COMPILE_DEFINITIONS "DEBUG=1"
 )
@@ -42,8 +42,6 @@ set_target_properties(omp-wizard_debug PROPERTIES
 # Release version
 target_link_libraries(
     omp-wizard
-    PRIVATE ftxui::screen
-    PRIVATE ftxui::dom
     PRIVATE ftxui::component
     PRIVATE nlohmann_json::nlohmann_json
 )
@@ -51,8 +49,6 @@ target_link_libraries(
 # Debug version
 target_link_libraries(
     omp-wizard_debug
-    PRIVATE ftxui::screen
-    PRIVATE ftxui::dom
     PRIVATE ftxui::component
     PRIVATE nlohmann_json::nlohmann_json
 )
