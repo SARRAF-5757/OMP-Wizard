@@ -1,42 +1,51 @@
 # OMP Wizard
 
-This is a visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
+A visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
 
 # Getting Started
 
+## MacOS
+
 1. Download the binary from [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
-2. Navigate to the directory (ex. Downloads) the binary's in
-3. Give executable permissions by `chmod +x .omp-wizaard`
-4. Run the wizard with `omp-wizaard`
+2. Navigate to the directory (ex. Downloads) the binary is in
+3. Give executable permissions by running `chmod +x omp-wizard`
+4. Run the wizard with `./omp-wizard`
+
+## Windows & Linux (binaries coming soon)
+
+1. Clone the repository
+2. `cd` into the project directory
+3. make a build directory `mkdir build`
+4. `cd` into the build directory
+5. run `cmake ..`
+6. run `make`
+7. Run the wizard with `./omp-wizard`
 
 # Feature Checklist
 
 - [x] Left prompt customization
   - [x] User
   - [x] Directory Path
-  - [x] Git status
+  - [x] Git Status
   - [ ] More blocks coming!
 - [ ] Right prompt customization
-- [x] Three different color modes (full/text/monochrome)
+  - [ ] Time
+  - [ ] Shell
+  - [ ] Dynamic Tooling blocks
+  - [ ] More coming
+- [x] Three color modes (full/text/monochrome)
 - [x] Color Picker
+  - [ ] Manual HEX entry
 - [x] Transient Prompt support
-- [x] Transient Prompt customization
+  - [ ] Transient Prompt customization
 - [x] Tab title customization
 - [ ] Live render of prompt's current customization progress
 - [ ] Agnoster support for path block
 - [ ] Icon-less mode
 - [ ] Advanced Mode
 - [ ] Windows & Linux support
+- [ ] Streamlined setup process for all platforms
 - [ ] More customization!
-
-# Build your own binary
-
-1. Clone repository
-2. `mkdir build`
-3. `cd build`
-4. `cmake ..`
-5. `make`
-6. `./omp-wizaard`
 
 ## References
 
