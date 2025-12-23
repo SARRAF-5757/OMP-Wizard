@@ -3,14 +3,15 @@
 A visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
 
 <p align="center">
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-modes.png?raw=true" alt="color-modes"/>
+  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/logo.png?raw=true" alt="OMP-Wizard Logo" width="50%"/>
 </p>
 <p align="center">
+  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-modes.png?raw=true" alt="color-modes" width="48%"/>
   <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/main-screen.png?raw=true" alt="main-screen" width="48%"/>
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-picker.png?raw=true" alt="color-picker" width="48%"/>
 </p>
 <p align="center">
   <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/choose-diamond.png?raw=true" alt="choose-diamond" width="48%"/>
+  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-picker.png?raw=true" alt="color-picker" width="48%"/>
 </p>
 
 # Getting Started
