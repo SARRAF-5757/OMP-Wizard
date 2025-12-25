@@ -54,5 +54,6 @@ target_link_libraries(
 )
 
 if (WIN32)
-  target_link_options(omp-wizard PRIVATE -static)
+  target_link_options(omp-wizard PRIVATE -static -static-libgcc -static-libstdc++)
+  target_link_options(omp-wizard_debug PRIVATE -static -static-libgcc -static-libstdc++)
 endif()
