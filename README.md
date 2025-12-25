@@ -17,12 +17,17 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 
 # Getting Started
 
-1. Download the binary for your OS (Mac/Windows/Linux) from the [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
-2. Navigate to the directory (ex. Downloads) the file is in
+1. Download the binary for your system (Mac/Windows/Linux) from the [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
+2. Open your terminal app and navigate (cd) to the directory where you downloaded the file (ex. Downloads)
 3. Run the wizard with-
    a. `./mac-omp-wizard` for Mac & Linux
-   b. `.\win-omp-wizard` for Windows
+   b. `.\win-omp-wizard.exe` for Windows (or double click the binary from File Explorer)
 4. Follow on-screen directions
+5. On completion the wizard will generate the theme file- `generated-theme.omp.json`
+6. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
+7. Restart your shell and enjoy :)
+
+_Pro Tip:_ The wizard generates the file in the directory you run it from. If you keep the wizard and the generated JSON file in a permanent location, you can re-run the wizard later to overwrite it, and your shell will update automatically upon restart!
 
 # Feature Checklist
 
@@ -46,9 +51,17 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 - [ ] Agnoster support for path block
 - [ ] Icon-less mode
 - [ ] Advanced Mode
-- [x] Windows & Linux support
+- [ ] Platform support
+  - [x] Apple Silicone Mac
+  - [ ] Intel Mac
+  - [x] Windows
+  - [x] Linux
 - [ ] Unified and streamlined setup process for all platforms
 - [ ] More customization!
+
+## Suggestions and Feature Request
+
+This project is just two friends building something they needed, so it's bound to get heavily opinionated. However, we want to make it useful for everyone. So, if you have ideas for features, polish, or changes, please drop a note in [Discussions](https://github.com/SARRAF-5757/OMP-Wizard/discussions)
 
 ## References
 

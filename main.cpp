@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include <ftxui/component/component_base.hpp>
+#include <sys/syslimits.h>
 
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
@@ -93,7 +94,7 @@ vector<string> trailing_diamonds = {
 };
 
 //* For miscellaneous options
-vector<string> boolean_choice = { "No", "Yes" };
+vector<string> boolean_choice = { "Yes", "No" };
 vector<string> color_mode_choices
   = { "Colored Background", "Colored Text (Transparent Background)", "Colored Text (Monochrome Background)" };
 vector<string> title_choices
@@ -199,12 +200,21 @@ void GenerateJSON(const ConfigState& config) {
 
     //? Now add diamonds based on position
     if (types.size() == 1) {
-        segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+        // offset fix for some leading diamonds
+        if (config.dmnd_leading > 3) {
+            segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+        } else {
+            segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+        }
         segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
     } else {
         for (size_t i = 0; i < types.size(); i++) {
             if (i == 0) {
-                segmentsJSON[i]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+                if (config.dmnd_leading > 3) {
+                    segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+                } else {
+                    segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+                }
                 segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
             } else if (i == types.size() - 1) {
                 segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
@@ -294,7 +304,7 @@ int main() {
     });
 
     string trPromptTitle
-      = "Transient Prompt: Do you want to show your full prompt after a command execution has completed?";
+      = "Transient Prompt: Do you want to reduce clutter by shrinking your prompt after you hit Enter?";
     auto tabTrPrompt = Radiobox({
       .entries = boolean_choice,
       .selected = &config.tr_prompt,
@@ -414,8 +424,14 @@ int main() {
                     tabMessage.push_back(fgTitle);
                 }
 
-                // only add background color option if monochrome mode is selected
+                // only add end diamonds & background color option if monochrome mode is selected
                 if (config.color_mode == 2) {
+                    showTabs.push_back(tabDmndLeading);
+                    tabMessage.push_back(dmndLeadTitle);
+
+                    showTabs.push_back(tabDmndTrailing);
+                    tabMessage.push_back(dmndTrailTitle);
+
                     showTabs.push_back(tabBg);
                     tabMessage.push_back(bgTitle);
                 }
