@@ -52,3 +52,7 @@ target_link_libraries(
     PRIVATE ftxui::component
     PRIVATE nlohmann_json::nlohmann_json
 )
+
+if (WIN32)
+  target_link_options(omp-wizard PRIVATE -static)
+endif()
