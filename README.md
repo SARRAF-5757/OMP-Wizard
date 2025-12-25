@@ -7,6 +7,10 @@
 A visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
 
 <p align="center">
+  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/demo.gif?raw=true" alt="demo GIF" width="90%"/>
+</p>
+
+<p align="center">
   <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-modes.png?raw=true" alt="color-modes" width="48%"/>
   <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/main-screen.png?raw=true" alt="main-screen" width="48%"/>
 </p>
