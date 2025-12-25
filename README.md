@@ -21,16 +21,24 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 
 # Getting Started
 
+### Mac & Linux
+
 1. Download the binary for your system (Mac/Windows/Linux) from the [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
 2. Open your terminal app and navigate (cd) to the directory where you downloaded the file (ex. Downloads)
-3. Give the binary permissions with `chmod +x mac-omp-wizard`
-4. Run the wizard with-
-   a. `./mac-omp-wizard` for Mac & Linux
-   b. `.\win-omp-wizard.exe` for Windows (or double click the binary from File Explorer)
+3. Give the binary permissions with `chmod +x omp-wizard`
+4. Run the wizard with `./omp-wizard`
 5. Follow on-screen directions
 6. On completion the wizard will generate the theme file- `generated-theme.omp.json`
 7. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
 8. Restart your shell and enjoy :)
+
+### Windows
+
+1. Double click the downloaded file or run it by `.\win-omp-wizard.exe` in the terminal
+2. Follow the on-screen directions
+3. On completion the wizard will generate the theme file- `generated-theme.omp.json`
+4. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
+5. Restart your shell
 
 _Pro Tip:_ The wizard generates the file in the directory you run it from. If you keep the wizard and the generated JSON file in a permanent location, you can re-run the wizard later to overwrite it, and your shell will update automatically upon restart!
 
