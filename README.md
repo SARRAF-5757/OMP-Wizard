@@ -17,22 +17,12 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 
 # Getting Started
 
-## MacOS
-
-1. Download the binary from [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
-2. Navigate to the directory (ex. Downloads) the binary is in
-3. Give executable permissions by running `chmod +x omp-wizard`
-4. Run the wizard with `./omp-wizard`
-
-## Windows & Linux (binaries coming soon)
-
-1. Clone the repository
-2. `cd` into the project directory
-3. make a build directory `mkdir build`
-4. `cd` into the build directory
-5. run `cmake ..`
-6. run `make`
-7. Run the wizard with `./omp-wizard`
+1. Download the binary for your OS (Mac/Windows/Linux) from the [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
+2. Navigate to the directory (ex. Downloads) the file is in
+3. Run the wizard with-
+   a. `./mac-omp-wizard` for Mac & Linux
+   b. `.\win-omp-wizard` for Windows
+4. Follow on-screen directions
 
 # Feature Checklist
 
@@ -56,8 +46,8 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 - [ ] Agnoster support for path block
 - [ ] Icon-less mode
 - [ ] Advanced Mode
-- [ ] Windows & Linux support
-- [ ] Streamlined setup process for all platforms
+- [x] Windows & Linux support
+- [ ] Unified and streamlined setup process for all platforms
 - [ ] More customization!
 
 ## References
