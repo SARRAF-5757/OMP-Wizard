@@ -78,7 +78,7 @@ This project is just two friends building something they needed, so it's bound t
 
 ## Troubleshooting
 
-- If you don't see some of diamonds or some parts of the TUI look weird, make sure you have a [nerd font](https://www.nerdfonts.com/font-downloads) installed
+- If you don't see some of the diamonds or some parts of the TUI look weird, make sure you have a [nerd font](https://www.nerdfonts.com/font-downloads) installed
 
 ## References
 
