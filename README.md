@@ -76,6 +76,10 @@ _Pro Tip:_ The wizard generates the file in the directory you run it from. If yo
 
 This project is just two friends building something they needed, so it's bound to get heavily opinionated. However, we want to make it useful for everyone. So, if you have ideas for features, polish, or changes, please drop a note in [Discussions](https://github.com/SARRAF-5757/OMP-Wizard/discussions)
 
+## Troubleshooting
+
+- If you don't see some of diamonds or some parts of the TUI look weird, make sure you have a [nerd font](https://www.nerdfonts.com/font-downloads) installed
+
 ## References
 
 - TUI library used - [FTXUI](https://github.com/ArthurSonzogni/FTXUI) | [Docs](https://arthursonzogni.github.io/FTXUI/index.html)
