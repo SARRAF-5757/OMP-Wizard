@@ -49,47 +49,51 @@ struct ConfigState {
 
 //* Dictionary of diamonds for human-readable usage throughout the code
 map<string, string> symbols = {
-    {   "lCirc", "\ue0b6" },
-    {   "rCirc", "\ue0b4" },
-    {    "lTri", "\ue0b2" },
-    {    "rTri", "\ue0b0" },
-    { "llSlant", "\ue0ba" },
-    { "rlSlant", "\ue0bc" },
-    { "luSlant", "\ue0be" },
-    { "ruSlant", "\ue0b8" },
-    {   "lFire", "\ue0c2" },
-    {   "rFire", "\ue0c0" },
-    {  "lShock", "\ue0ca" },
-    {  "rShock", "\ue0c8" },
-    {  "lbFade", "\ue0c7" },
-    {  "rbFade", "\ue0c6" },
-    {  "lsFade", "\ue0c5" },
-    {  "rsFade", "\ue0c4" },
+    {   "lCirc",             "\ue0b6" },
+    {   "rCirc",             "\ue0b4" },
+    {    "lTri",             "\ue0b2" },
+    {    "rTri",             "\ue0b0" },
+    { "llSlant",             "\ue0ba" },
+    { "rlSlant",             "\ue0bc" },
+    { "luSlant",             "\ue0be" },
+    { "ruSlant",             "\ue0b8" },
+    {   "lFire",             "\ue0c2" },
+    {   "rFire",             "\ue0c0" },
+    {  "lShock",             "\ue0ca" },
+    {  "rShock",             "\ue0c8" },
+    {  "lbFade",             "\ue0c7" },
+    {  "rbFade",             "\ue0c6" },
+    {  "lsFade",             "\ue0c5" },
+    {  "rsFade",             "\ue0c4" },
+    {  "lsBlur", "\u2591\u2592\u2593" },
+    {  "rsBlyr", "\u2593\u2592\u2591" }
 };
 
 
 //* List of leading diamond choices (radiobox entries)
 vector<string> leading_diamonds = {
-    "\ue0b6",   // left half-circle
-    "\ue0b2",   // left triangle
-    "\ue0ba",   // left lower slant
-    "\ue0be",   // left upper slant
-    "\ue0c2",   // left fire
-    "\ue0ca",   // left shockwave
-    "\ue0c7",   // left big square fade
-    "\ue0c5",   // left small square fade
+    "\u2591\u2592\u2593",   // left fading blur
+    "\ue0b6",               // left half-circle
+    "\ue0b2",               // left triangle
+    "\ue0ba",               // left lower slant
+    "\ue0be",               // left upper slant
+    "\ue0c2",               // left fire
+    "\ue0ca",               // left shockwave
+    "\ue0c7",               // left big square fade
+    "\ue0c5",               // left small square fade
 };
 
 //* List of trailing diamond choices (radiobox entries)
 vector<string> trailing_diamonds = {
-    "\ue0b4",   // right half-circle
-    "\ue0b0",   // right triangle
-    "\ue0bc",   // right upper slant
-    "\ue0b8",   // right lower slant
-    "\ue0c0",   // right fire
-    "\ue0c8",   // right shockwave
-    "\ue0c6",   // right big square fade
-    "\ue0c4",   // right small square fade
+    "\u2593\u2592\u2591",   // right fading blur
+    "\ue0b4",               // right half-circle
+    "\ue0b0",               // right triangle
+    "\ue0bc",               // right upper slant
+    "\ue0b8",               // right lower slant
+    "\ue0c0",               // right fire
+    "\ue0c8",               // right shockwave
+    "\ue0c6",               // right big square fade
+    "\ue0c4",               // right small square fade
 };
 
 //* For miscellaneous options
@@ -200,7 +204,7 @@ void GenerateJSON(const ConfigState& config) {
     //? Now add diamonds based on position
     if (types.size() == 1) {
         // offset fix for some leading diamonds
-        if (config.dmnd_leading > 3) {
+        if (config.dmnd_leading > 4) {
             segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
         } else {
             segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
@@ -209,7 +213,7 @@ void GenerateJSON(const ConfigState& config) {
     } else {
         for (size_t i = 0; i < types.size(); i++) {
             if (i == 0) {
-                if (config.dmnd_leading > 3) {
+                if (config.dmnd_leading > 4) {
                     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
                 } else {
                     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
