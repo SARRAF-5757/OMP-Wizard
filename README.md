@@ -27,6 +27,7 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 2. Open your terminal app and navigate (cd) to the directory where you downloaded the file (ex. Downloads)
 3. Give the binary permissions with `chmod +x omp-wizard`
 4. Run the wizard with `./omp-wizard`
+   [Note: Check [Troubleshooting](https://github.com/SARRAF-5757/OMP-Wizard?tab=readme-ov-file#troubleshooting) if mac blocks the command]
 5. Follow on-screen directions
 6. On completion the wizard will generate the theme file- `generated-theme.omp.json`
 7. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
@@ -35,6 +36,7 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 ### Windows
 
 1. Double click the downloaded file or run it by `.\win-omp-wizard.exe` in the terminal
+   [Note: Check [Troubleshooting](https://github.com/SARRAF-5757/OMP-Wizard?tab=readme-ov-file#troubleshooting) if facing trouble opening the executable]
 2. Follow the on-screen directions
 3. On completion the wizard will generate the theme file- `generated-theme.omp.json`
 4. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
@@ -79,6 +81,8 @@ This project is just two friends building something they needed, so it's bound t
 ## Troubleshooting
 
 - If you don't see some of the diamonds or some parts of the TUI look weird, make sure you have a [nerd font](https://www.nerdfonts.com/font-downloads) installed
+- On Windows, if Microsoft Defender blocks you, just click on `More Info` and then `Run Anyway`. You can check the source code, promise I'm not distributing malware :)
+- On MacOS, you might see a pop-up saying Apple could not verify if the software contains malware. Open System Settings->Privacy & Security. Scroll down until you see `“mac-omp-wizard” was blocked to protect your Mac.` Click on open anyway and repeat step 4 again.
 
 ## References
 

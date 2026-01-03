@@ -26,12 +26,24 @@ FetchContent_MakeAvailable(nlohmann_json)
 
 # --- Build Executables ---
 # Release build
-add_executable(omp-wizard main.cpp)
+add_executable(
+    omp-wizard
+    src/main.cpp
+    src/simpleMode/SimpleMode.cpp
+    src/advancedMode/AdvancedMode.cpp
+)
+target_include_directories(omp-wizard PRIVATE src)
 target_compile_options(omp-wizard PRIVATE -O2)
 set_target_properties(omp-wizard PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Debug build
-add_executable(omp-wizard_debug main.cpp)
+add_executable(
+    omp-wizard_debug
+    src/main.cpp
+    src/simpleMode/SimpleMode.cpp
+    src/advancedMode/AdvancedMode.cpp
+)
+target_include_directories(omp-wizard PRIVATE src)
 target_compile_options(omp-wizard_debug PRIVATE -g -O0)
 set_target_properties(omp-wizard_debug PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
