@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 
-
 //* List of leading diamond choices (radiobox entries)
 const std::vector<std::string> leading_diamonds = {
     "\u2591\u2592\u2593",   // left fading blur

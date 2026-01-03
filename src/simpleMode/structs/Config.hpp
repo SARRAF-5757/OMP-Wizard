@@ -2,10 +2,9 @@
 #include <string>
 #include <vector>
 
-#include "Colors.hpp"
+#include "RGB.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
-using namespace std;
 using namespace ftxui;
 
 //* Struct to hold different user choices
@@ -15,19 +14,19 @@ struct ConfigState {
     bool tabsAdded = false;
 
     // vectors for tabs (in main)
-    vector<Component> showTabs;
-    vector<string> tabMessage;
+    std::vector<Component> showTabs;
+    std::vector<std::string> tabMessage;
 
     // block choices
     bool show_user = false;
     bool show_path = false;
     bool show_git = false;
     // block colors
-    string color_fg = "transparent";
-    string color_bg = "#000000";
-    string color_user = "#FFFFFF";
-    string color_path = "#FFFFFF";
-    string color_git = "#FFFFFF";
+    std::string color_fg = "transparent";
+    std::string color_bg = "#000000";
+    std::string color_user = "#FFFFFF";
+    std::string color_path = "#FFFFFF";
+    std::string color_git = "#FFFFFF";
     // diamond choices
     int dmnd_leading = 0;
     int dmnd_connecting = 0;

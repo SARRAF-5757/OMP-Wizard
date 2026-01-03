@@ -7,17 +7,15 @@
 #include "../structs/Diamonds.hpp"
 #include "nlohmann/json.hpp"
 
-
-using namespace std;
 using json = nlohmann::json;
 
 //!--------------------------------------Generate JSON-------------------------------------!//
 void GenerateJSON(const ConfigState& config) {
     //? Initialize vectors of segment properties and populate them based on selected segments
-    vector<string> types;
-    vector<string> templates;
-    vector<string> colors;
-    vector<json> segmentsJSON;
+    std::vector<std::string> types;
+    std::vector<std::string> templates;
+    std::vector<std::string> colors;
+    std::vector<json> segmentsJSON;
 
     if (config.show_user) {
         types.emplace_back("session");
@@ -153,7 +151,7 @@ void GenerateJSON(const ConfigState& config) {
     }
 
     // output JSON into a file with a 4-indent style (basic JSON formatting)
-    ofstream o("generated-theme.omp.json");
+    std::ofstream o("generated-theme.omp.json");
     o << j.dump(4);
     o.close();
 }

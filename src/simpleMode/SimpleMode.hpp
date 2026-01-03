@@ -2,4 +2,4 @@
 #include "ftxui/component/component.hpp"
 #include "structs/Config.hpp"
 
-ftxui::Component MakeSimpleMode(ConfigState& state, function<void()> on_quit);
+ftxui::Component MakeSimpleMode(ConfigState& state, std::function<void()> on_quit);

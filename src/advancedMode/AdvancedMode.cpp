@@ -7,7 +7,7 @@
 
 using namespace ftxui;
 
-Component MakeAdvancedMode(ConfigState& config, function<void()> on_quit) {
+Component MakeAdvancedMode(ConfigState& config, std::function<void()> on_quit) {
     auto toRender = Renderer([] {
         return vbox({ text("Advanced Mode Coming Soon"), text(""),
                       text("[q] = Quit the wizard without generating config file") })
