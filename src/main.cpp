@@ -21,10 +21,8 @@ int main() {
     auto main_menu = Container::Vertical({ mode_radio });
 
     auto toRender = Renderer(main_menu, [&] {
-        return vbox({ text("Welcome to OMP Wizard") | hcenter, text(" "), mode_radio->Render() | hcenter, text(" "),
-                      text(" "),
-                      vbox({ text("[q] = Quit the wizard without generating config file"),
-                             text("[n] = Confirm selections & go to the next screen") })
+        return vbox({ text("Welcome to OMP Wizard") | hcenter, text(" "), mode_radio->Render() | hcenter, text(" "), text(" "),
+                      vbox({ text("[q] = Quit the wizard without generating config file"), text("[n] = Confirm selections & go to the next screen") })
                         | hcenter })
              | center;
     });

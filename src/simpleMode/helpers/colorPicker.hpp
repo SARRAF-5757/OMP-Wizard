@@ -26,13 +26,12 @@ Component colorPicker(rgb* rgbValues, string& hex) {
         }
     };
 
-    // Construct the layout along with the input area
+    //* Setup UI
     auto hexInput = Input(&hex, "FFFFFF", hexOption);
     auto layout = Container::Vertical({ slider_r, slider_g, slider_b, hexInput });
 
     return Renderer(layout, [=, &hex] {
-        auto preview = text("   COLOR   ") | bgcolor(Color::RGB(rgbValues->red, rgbValues->green, rgbValues->blue))
-                     | color(Color::Black);
+        auto preview = text("   COLOR   ") | bgcolor(Color::RGB(rgbValues->red, rgbValues->green, rgbValues->blue)) | color(Color::Black);
 
         string calculatedHex = RGBtoHex(rgbValues->red, rgbValues->green, rgbValues->blue);
 

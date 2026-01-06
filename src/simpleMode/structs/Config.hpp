@@ -5,7 +5,6 @@
 #include "RGB.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
-using namespace ftxui;
 
 //* Struct to hold different user choices
 struct ConfigState {
@@ -14,7 +13,7 @@ struct ConfigState {
     bool tabsAdded = false;
 
     // vectors for tabs (in main)
-    std::vector<Component> showTabs;
+    std::vector<ftxui::Component> showTabs;
     std::vector<std::string> tabMessage;
 
     // block choices

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../structs/Config.hpp"
-#include "../structs/Diamonds.hpp"
+#include "../structs/Constants.hpp"
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;

@@ -30,7 +30,6 @@ const std::vector<std::string> trailing_diamonds = {
 
 //* For miscellaneous options
 const std::vector<std::string> boolean_choice = { "Yes", "No" };
-const std::vector<std::string> color_mode_choices
+const std::vector<std::string> color_mode_choice
   = { "Colored Background", "Colored Text (Transparent Background)", "Colored Text (Monochrome Background)" };
-const std::vector<std::string> title_choices
-  = { "Default", "Current folder", "Parent folder/current folder", "Full Path", "'Shell' in 'Full Path'" };
+const std::vector<std::string> title_choices = { "Default", "Current folder", "Parent folder/current folder", "Full Path", "'Shell' in 'Full Path'" };
