@@ -13,7 +13,7 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Directory Path", &config.show_path),
       Checkbox("Git Status", &config.show_git),
     });
-    auto tabColorMode = Radiobox({ color_mode_choices, &config.color_mode });
+    auto tabColorMode = Radiobox({ color_mode_choice, &config.color_mode });
     auto tabTrPrompt = Radiobox({ boolean_choice, &config.tr_prompt });
     auto tabTitle = Radiobox({ title_choices, &config.title_mode });
 

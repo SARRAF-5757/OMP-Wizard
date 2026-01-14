@@ -1,4 +1,4 @@
-#include "advancedMode/AdvancedMode.hpp"
+#include "advancedMode/advancedMode.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 #include "simpleMode/SimpleMode.hpp"
@@ -36,16 +36,19 @@ int main() {
             if (mode_selected == 0) {
                 tab_index = 1;
             } else {
+                screen.ExitLoopClosure()();
                 tab_index = 2;
+                return true;
             }
         }
         return false;
     });
-
     auto simple_mode = MakeSimpleMode(state, screen.ExitLoopClosure());
-    auto advanced_mode = MakeAdvancedMode(state, screen.ExitLoopClosure());
-    auto selector = Container::Tab({ component, simple_mode, advanced_mode }, &tab_index);
+    auto selector = Container::Tab({ component, simple_mode }, &tab_index);
 
     screen.Loop(selector);
+    if(tab_index == 2){
+        advancedMode();
+    }
     return 0;
 }
