@@ -1,7 +1,7 @@
 #include "advancedMode/advancedMode.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
-#include "simpleMode/SimpleMode.hpp"
+#include "simpleMode/simpleMode.hpp"
 #include "simpleMode/structs/Config.hpp"
 
 using namespace std;
@@ -47,7 +47,7 @@ int main() {
     auto selector = Container::Tab({ component, simple_mode }, &tab_index);
 
     screen.Loop(selector);
-    if(tab_index == 2){
+    if (tab_index == 2) {
         advancedMode();
     }
     return 0;

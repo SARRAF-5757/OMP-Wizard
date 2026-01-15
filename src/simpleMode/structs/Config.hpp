@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "RGB.hpp"
+#include "../../shared/structs/RGB.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
 

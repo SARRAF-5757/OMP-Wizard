@@ -29,7 +29,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 add_executable(
     omp-wizard
     src/main.cpp
-    src/simpleMode/SimpleMode.cpp
+    src/simpleMode/simpleMode.cpp
     src/advancedMode/advancedMode.cpp
 )
 target_include_directories(omp-wizard PRIVATE src)
@@ -40,7 +40,7 @@ set_target_properties(omp-wizard PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BIN
 add_executable(
     omp-wizard_debug
     src/main.cpp
-    src/simpleMode/SimpleMode.cpp
+    src/simpleMode/simpleMode.cpp
     src/advancedMode/advancedMode.cpp
 )
 target_include_directories(omp-wizard PRIVATE src)

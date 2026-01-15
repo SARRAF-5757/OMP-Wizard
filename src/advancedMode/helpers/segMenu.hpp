@@ -6,17 +6,12 @@
 #include "ftxui/component/screen_interactive.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "nlohmann/json.hpp"
+#include "../../shared/structs/RGB.hpp"
 
 using namespace std;
 using namespace ftxui;
 using json = nlohmann::json;
 
-// rgb color struct (defaults to light purple)
-struct rg {
-    int red = 156;
-    int green = 115;
-    int blue = 254;
-};
 
 //* Struct to hold different user choices
 struct ConfigStat {
@@ -30,8 +25,8 @@ struct ConfigStat {
     int island_mode = 0;
     int dmnd_leading = 0;
     // colors
-    rg fg_color = { 255, 255, 255 };
-    rg bg_color = { 18, 19, 20 };
+    rgb fg_color = { 255, 255, 255 };
+    rgb bg_color = { 18, 19, 20 };
 };
 
 vector<string> color_mode_choice = 
@@ -54,7 +49,7 @@ vector<string> options_mode_choice =
 
 vector<string> trailing_diamond = 
     {
-        "None",
+        "None",     // straight edge
         "\ue0b4",   // right half-circle
         "\ue0b0",   // right triangle
         "\ue0bc",   // right upper slant
@@ -63,11 +58,11 @@ vector<string> trailing_diamond =
         "\ue0c8",   // right shockwave
         "\ue0c6",   // right big square fade
         "\ue0c4",   // right small square fade
-        "Custom"
+        "Custom"    // input hex code
     };
 
 vector<string> leading_diamond = {
-    "None",
+    "None",     // straight edge
     "\ue0b6",   // left half-circle
     "\ue0b2",   // left triangle
     "\ue0ba",   // left lower slant
@@ -76,7 +71,7 @@ vector<string> leading_diamond = {
     "\ue0ca",   // left shockwave
     "\ue0c7",   // left big square fade
     "\ue0c5",   // left small square fade
-    "Custom",
+    "Custom",   // input hex code
 };
 
 vector<string> island_mode_choice = 
@@ -93,7 +88,7 @@ string RGtoHex(int r, int g, int b) {
 }
 
 //@ To create tab components for color selector tabs
-Component colorPicke(rg* rgValues, string& hex) {
+Component colorPicke(rgb* rgValues, string& hex) {
     auto slider_r = Slider("Red   :", &rgValues->red, 0, 255, 1);
     auto slider_g = Slider("Green :", &rgValues->green, 0, 255, 1);
     auto slider_b = Slider("Blue  :", &rgValues->blue, 0, 255, 1);
