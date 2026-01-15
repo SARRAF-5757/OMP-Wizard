@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../../shared/structs/Config.hpp"
-#include "../structs/Constants.hpp"
+#include "../../shared/structs/Constants.hpp"
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
@@ -74,28 +74,56 @@ void GenerateJSON(const ConfigState& config) {
         }
     }
 
-    //? Now add diamonds based on position
+    //? Add diamonds based on position
+    //@ If only one block is chosen
     if (types.size() == 1) {
-        // offset fix for some leading diamonds
-        if (config.dmnd_leading > 4) {
+        //@ leading
+        if (config.dmnd_leading == 0) {               // No diamond if "None" chosen
+            segmentsJSON[0]["leading_diamond"] = "";
+        } else if (config.dmnd_leading > 5) {         // offset fix for some leading diamonds
             segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
         } else {
             segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
         }
-        segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+
+        //@ trailing
+        if (config.dmnd_trailing== 0) {
+          segmentsJSON[0]["trailing_diamond"] = "";
+        } else {
+          segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+        }
+    //@ Multiple blocks chosen
     } else {
         for (size_t i = 0; i < types.size(); i++) {
+            //@ for first block (leading + trailing)
             if (i == 0) {
-                if (config.dmnd_leading > 4) {
+                if (config.dmnd_leading == 0) {
+                    segmentsJSON[0]["leading_diamond"] = "";
+                } else if (config.dmnd_leading > 5) {
                     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
                 } else {
                     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
                 }
-                segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+
+                if (config.dmnd_connecting == 0) {
+                  segmentsJSON[0]["trailing_diamond"] = "";
+                } else {
+                  segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                }
+            //@ for last block (trailing)
             } else if (i == types.size() - 1) {
-                segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+                if (config.dmnd_trailing== 0) {
+                  segmentsJSON.back()["trailing_diamond"] = "";
+                } else {
+                  segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+                }
+            //@ everything else (connecting)
             } else {
-                segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                if (config.dmnd_connecting == 0) {
+                  segmentsJSON[i]["trailing_diamond"] = "";
+                } else {
+                  segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                }
             }
         }
     }
