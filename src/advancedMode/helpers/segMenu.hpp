@@ -8,6 +8,7 @@
 #include "nlohmann/json.hpp"
 #include "../../shared/structs/RGB.hpp"
 #include "../../shared/structs/Config.hpp"
+#include "../../shared/helpers/convertColors.hpp"
 
 using namespace std;
 using namespace ftxui;
@@ -65,13 +66,6 @@ vector<string> island_mode_choice =
         "Yes"
     };
 //!--------------------------------------Hlper Functions-------------------------------------!//
-//@ Helper to convert rgba values to HEX codes
-string RGtoHex(int r, int g, int b) {
-    stringstream ss;
-    ss << "#" << hex << setfill('0') << setw(2) << r << setw(2) << g << setw(2) << b;
-    return ss.str();
-}
-
 //@ To create tab components for color selector tabs
 Component colorPicke(rgb* rgValues, string& hex) {
     auto slider_r = Slider("Red   :", &rgValues->red, 0, 255, 1);
@@ -84,7 +78,7 @@ Component colorPicke(rgb* rgValues, string& hex) {
         auto preview = text("   COLOR   ") 
                             | bgcolor(Color::RGB(rgValues->red, rgValues->green, rgValues->blue))
                             | color(Color::Black);
-        hex = RGtoHex(rgValues->red, rgValues->green, rgValues->blue);
+        hex = RGBtoHex(rgValues->red, rgValues->green, rgValues->blue);
 
         // the size() options are necessary to make it wide enough.
         // or else it shrinks it too much (possibly cuz of hcenter in the main renderer)
@@ -247,9 +241,9 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
     if(cancel){
         return std::make_tuple("cancel", "cancel", "cancel", "cancel", "cancel", "cancel", "cancel");
     } else if(config.color_mode == 1){
-        config.color_bg = RGtoHex(config.bg_color.red, config.bg_color.green, config.bg_color.blue);
+        config.color_bg = RGBtoHex(config.bg_color.red, config.bg_color.green, config.bg_color.blue);
     }
-    return std::make_tuple( RGtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), 
+    return std::make_tuple( RGBtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), 
                             config.color_bg, 
                             island_mode_choice[config.island_mode],
                             leading_diamond[config.dmnd_leading],

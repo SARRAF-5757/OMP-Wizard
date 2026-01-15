@@ -1,8 +1,5 @@
-#pragma once
 #include <iomanip>
 #include <sstream>
-#include <string>
-
 
 //@ Helper to convert rgba values to HEX codes
 std::string RGBtoHex(int r, int g, int b) {

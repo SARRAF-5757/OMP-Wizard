@@ -1,4 +1,4 @@
-#include "../helpers/convertColors.hpp"
+#include "../../shared/helpers/convertColors.hpp"
 #include "../../shared/structs/Config.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
