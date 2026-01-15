@@ -32,6 +32,8 @@ add_executable(
     src/simpleMode/simpleMode.cpp
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
+    src/simpleMode/helpers/colorPicker.cpp
+    src/simpleMode/helpers/jsonGenerate.cpp
 )
 target_include_directories(omp-wizard PRIVATE src)
 target_compile_options(omp-wizard PRIVATE -O2)
@@ -44,6 +46,8 @@ add_executable(
     src/simpleMode/simpleMode.cpp
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
+    src/simpleMode/helpers/colorPicker.cpp
+    src/simpleMode/helpers/jsonGenerate.cpp
 )
 target_include_directories(omp-wizard PRIVATE src)
 target_compile_options(omp-wizard_debug PRIVATE -g -O0)
