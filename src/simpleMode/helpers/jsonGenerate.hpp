@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "../structs/Config.hpp"
+#include "../../shared/structs/Config.hpp"
 #include "../structs/Constants.hpp"
 #include "nlohmann/json.hpp"
 

@@ -1,5 +1,5 @@
 #include "../helpers/colorPicker.hpp"
-#include "../structs/Config.hpp"
+#include "../../shared/structs/Config.hpp"
 #include "../structs/Constants.hpp"
 #include "ftxui/component/component.hpp"
 

@@ -7,27 +7,12 @@
 #include "ftxui/dom/elements.hpp"
 #include "nlohmann/json.hpp"
 #include "../../shared/structs/RGB.hpp"
+#include "../../shared/structs/Config.hpp"
 
 using namespace std;
 using namespace ftxui;
 using json = nlohmann::json;
 
-
-//* Struct to hold different user choices
-struct ConfigStat {
-    // block colors
-    string color_fg = "#FFFFFF";
-    string color_bg = "transparent";
-    int color_mode = 0;
-    int template_mode = 0;
-    int option_mode = 0;
-    int dmnd_trailing = 0;
-    int island_mode = 0;
-    int dmnd_leading = 0;
-    // colors
-    rgb fg_color = { 255, 255, 255 };
-    rgb bg_color = { 18, 19, 20 };
-};
 
 vector<string> color_mode_choice = 
     { 
@@ -116,7 +101,7 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
     // Initialize Stuff
     auto screen = ScreenInteractive::Fullscreen();
     int tabSelected = 0;
-    ConfigStat config;
+    ConfigState config;
     bool tabsAdded = false;
     bool cancel = false;
 

@@ -1,5 +1,5 @@
 #include "../helpers/convertColors.hpp"
-#include "../structs/Config.hpp"
+#include "../../shared/structs/Config.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 #include "ftxui/dom/elements.hpp"

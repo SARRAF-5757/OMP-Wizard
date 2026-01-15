@@ -2,7 +2,7 @@
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 #include "simpleMode/simpleMode.hpp"
-#include "simpleMode/structs/Config.hpp"
+#include "shared/structs/Config.hpp"
 
 using namespace std;
 using namespace ftxui;

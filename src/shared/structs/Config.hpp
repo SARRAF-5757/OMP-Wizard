@@ -21,8 +21,8 @@ struct ConfigState {
     bool show_path = false;
     bool show_git = false;
     // block colors
-    std::string color_fg = "transparent";
-    std::string color_bg = "#000000";
+    std::string color_fg = "#FFFFFF";
+    std::string color_bg = "transparent";
     std::string color_user = "#FFFFFF";
     std::string color_path = "#FFFFFF";
     std::string color_git = "#FFFFFF";
@@ -41,4 +41,10 @@ struct ConfigState {
     rgb user_color = { 171, 118, 217 };
     rgb path_color = { 130, 170, 255 };
     rgb git_color = { 255, 223, 109 };
+
+
+    // advanced mode exclusives
+    int template_mode = 0;
+    int option_mode = 0;
+    int island_mode = 0;
 };
