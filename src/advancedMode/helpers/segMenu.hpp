@@ -2,6 +2,7 @@
 
 #include <ftxui/component/component_base.hpp>
 
+#include "../../shared/helpers/colorPicker.hpp"
 #include "../../shared/helpers/convertColors.hpp"
 #include "../../shared/structs/Config.hpp"
 #include "../../shared/structs/Constants.hpp"
@@ -14,29 +15,6 @@
 using namespace std;
 using namespace ftxui;
 using json = nlohmann::json;
-
-
-//!--------------------------------------Hlper Functions-------------------------------------!//
-//@ To create tab components for color selector tabs
-Component colorPicke(rgb* rgValues, string& hex) {
-    auto slider_r = Slider("Red   :", &rgValues->red, 0, 255, 1);
-    auto slider_g = Slider("Green :", &rgValues->green, 0, 255, 1);
-    auto slider_b = Slider("Blue  :", &rgValues->blue, 0, 255, 1);
-
-    auto layout = Container::Vertical({ slider_r, slider_g, slider_b });
-
-    return Renderer(layout, [=, &hex] {
-        auto preview = text("   COLOR   ") | bgcolor(Color::RGB(rgValues->red, rgValues->green, rgValues->blue)) | color(Color::Black);
-        hex = RGBtoHex(rgValues->red, rgValues->green, rgValues->blue);
-
-        // the size() options are necessary to make it wide enough.
-        // or else it shrinks it too much (possibly cuz of hcenter in the main renderer)
-        return hbox({ preview, separator(),
-                      vbox({ slider_r->Render(), slider_g->Render(), slider_b->Render(), separator(), text("Hex: " + hex) })
-                        | size(WIDTH, GREATER_THAN, 30) })
-             | border | size(WIDTH, GREATER_THAN, 30);
-    });
-}
 
 
 std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(std::string segmentType) {
@@ -54,10 +32,10 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
     });
 
     string fgTitle = "Pick a text color for " + segmentType;
-    auto tabFg = colorPicke(&config.fg_color, config.color_fg);
+    auto tabFg = colorPicker(&config.fg_color, config.color_fg);
 
     string bgTitle = "Pick a background color for " + segmentType;
-    auto tabBg = colorPicke(&config.bg_color, config.color_bg);
+    auto tabBg = colorPicker(&config.bg_color, config.color_bg);
 
     string trailingDmndTitle = "Pick a trailing diamond for " + segmentType;
     auto tabTrailingDmnd = Radiobox({
