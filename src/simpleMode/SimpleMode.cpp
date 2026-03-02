@@ -16,9 +16,9 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
     unordered_map<string, Component> contVec = genPageContents(config);
     unordered_map<string, string> titleVec = genPageTitles();
 
-    // Vectors to switch contents among tabs (preloaded with first two screens)
-    config.showTabs = { contVec["tabChooseBlocks"], contVec["tabColorMode"] };     // Vector of components representing each tab
-    config.tabMessage = { titleVec["blocksTitle"], titleVec["colorModeTitle"] };   // Titles shown on each screens
+    // Start with just the prompt picker page
+    config.showTabs = { contVec["tabPickPrompts"] };
+    config.tabMessage = { titleVec["promptPickTitle"] };
 
     //* Setup UI
     // Container of tabs
@@ -41,85 +41,159 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
 
     //* Catch keypresses
     auto component = CatchEvent(toRender, [=, &config](Event event) {
-        // To catch 'q' keypress to exit wizard
         if (event == Event::Character('q')) {
             on_quit();
             return true;
         }
 
         if (event == Event::Character('n')) {
-            // Add the rest of the tabs only once [while on block selection (index 0) page]
-            if (config.tabSelected == 1) {
-                // # only offer diamonds & color options on full color mode
-                if (config.color_mode == 0) {
-                    if (config.show_user + config.show_path + config.show_git == 1) {
-                        config.showTabs.push_back(contVec.at("tabDmndLeading"));
-                        config.tabMessage.push_back(titleVec.at("dmndLeadTitle"));
-
-                        config.showTabs.push_back(contVec.at("tabDmndTrailing"));
-                        config.tabMessage.push_back(titleVec.at("dmndTrailTitle"));
-                    } else {
-                        // if two+ blocks, then offer a connecting diamond as well
-                        config.showTabs.push_back(contVec.at("tabDmndLeading"));
-                        config.tabMessage.push_back(titleVec.at("dmndLeadTitle"));
-
-                        config.showTabs.push_back(contVec.at("tabDmndConnecting"));
-                        config.tabMessage.push_back(titleVec.at("dmndConnectTitle"));
-
-                        config.showTabs.push_back(contVec.at("tabDmndTrailing"));
-                        config.tabMessage.push_back(titleVec.at("dmndTrailTitle"));
-                    }
-                    config.showTabs.push_back(contVec.at("tabFg"));
-                    config.tabMessage.push_back(titleVec.at("fgTitle"));
+            //! Pick and add let/right block + other pages
+            if (config.tabSelected == 0 && config.showTabs.size() == 1) {
+                // stop advancing if no prompt is chosen
+                if (!(config.use_left || config.use_right)) {
+                    return true;
                 }
 
-                // # only offer end diamonds & background color option on monochrome mode
-                if (config.color_mode == 2) {
-                    config.showTabs.push_back(contVec.at("tabDmndLeading"));
-                    config.tabMessage.push_back(titleVec.at("dmndLeadTitle"));
-
-                    config.showTabs.push_back(contVec.at("tabDmndTrailing"));
-                    config.tabMessage.push_back(titleVec.at("dmndTrailTitle"));
-
-                    config.showTabs.push_back(contVec.at("tabBg"));
-                    config.tabMessage.push_back(titleVec.at("bgTitle"));
+                // Add block selection pages for chosen sides
+                if (config.use_left) {
+                    config.showTabs.push_back(contVec.at("tabChooseBlocks"));
+                    config.tabMessage.push_back(titleVec.at("blocksTitle"));
+                }
+                if (config.use_right) {
+                    config.showTabs.push_back(contVec.at("tabChooseRightBlocks"));
+                    config.tabMessage.push_back(titleVec.at("rightBlocksTitle"));
                 }
 
-                // # block color options
-                if (config.show_user) {
-                    config.showTabs.push_back(contVec.at("tabUserColor"));
-                    config.tabMessage.push_back(titleVec.at("userColorTitle"));
-                }
-                if (config.show_path) {
-                    config.showTabs.push_back(contVec.at("tabDirColor"));
-                    config.tabMessage.push_back(titleVec.at("dirColorTitle"));
-                }
-                if (config.show_git) {
-                    config.showTabs.push_back(contVec.at("tabGitColor"));
-                    config.tabMessage.push_back(titleVec.at("gitColorTitle"));
-                }
+                // Add color mode page
+                config.showTabs.push_back(contVec.at("tabColorMode"));
+                config.tabMessage.push_back(titleVec.at("colorModeTitle"));
 
-                // # misc options
-                config.showTabs.push_back(contVec.at("tabTrPrompt"));
-                config.tabMessage.push_back(titleVec.at("trPromptTitle"));
-
-                config.showTabs.push_back(contVec.at("tabTitle"));
-                config.tabMessage.push_back(titleVec.at("titleTitle"));
-
-                // rebuild container
+                // Rebuild the tab container with the new pages
                 auto newTab = Container::Tab(config.showTabs, &config.tabSelected);
                 container->DetachAllChildren();
                 container->Add(newTab);
             }
 
-            //* Prevent changing tab under certain conditions
-            if (config.tabSelected == 0) {   // if no block is selected
-                if (!(config.show_user || config.show_path || config.show_git)) {
+            //* Prevent advancing if no blocks are selected on a block-selection page
+            // Left block selection page is at index 1 (only when use_left is true)
+            if (config.use_left && config.tabSelected == 1) {
+                if (!(config.show_user || config.show_path || config.show_git || config.show_time || config.show_shell)) {
+                    return true;
+                }
+            }
+            // Right block selection page index depends on whether left was also chosen
+            int rightBlocksIndex = config.use_left ? 2 : 1;
+            if (config.use_right && config.tabSelected == rightBlocksIndex) {
+                if (!(config.show_user_r || config.show_path_r || config.show_git_r || config.show_time_r || config.show_shell_r)) {
                     return true;
                 }
             }
 
-            if (config.tabSelected >= config.showTabs.size() - 1) {   // if at the last page
+            //! Add all remaining tabs
+            int colorModeIndex = 1 + (config.use_left ? 1 : 0) + (config.use_right ? 1 : 0);   // Figure out where the color mode page ended up
+
+            if (!config.tabsAdded && config.tabSelected == colorModeIndex) {
+                config.tabsAdded = true;
+
+                // # Diamond options (left prompt only)
+                if (config.use_left) {
+                    int leftCount = (int) config.show_user + (int) config.show_path + (int) config.show_git;
+
+                    if (config.color_mode == 0) {
+                        if (leftCount == 1) {
+                            config.showTabs.push_back(contVec.at("tabDmndLeading"));
+                            config.tabMessage.push_back(titleVec.at("dmndLeadTitle"));
+                            config.showTabs.push_back(contVec.at("tabDmndTrailing"));
+                            config.tabMessage.push_back(titleVec.at("dmndTrailTitle"));
+                        } else {
+                            config.showTabs.push_back(contVec.at("tabDmndLeading"));
+                            config.tabMessage.push_back(titleVec.at("dmndLeadTitle"));
+                            config.showTabs.push_back(contVec.at("tabDmndConnecting"));
+                            config.tabMessage.push_back(titleVec.at("dmndConnectTitle"));
+                            config.showTabs.push_back(contVec.at("tabDmndTrailing"));
+                            config.tabMessage.push_back(titleVec.at("dmndTrailTitle"));
+                        }
+                    }
+                    if (config.color_mode == 2) {
+                        config.showTabs.push_back(contVec.at("tabDmndLeading"));
+                        config.tabMessage.push_back(titleVec.at("dmndLeadTitle"));
+                        config.showTabs.push_back(contVec.at("tabDmndTrailing"));
+                        config.tabMessage.push_back(titleVec.at("dmndTrailTitle"));
+                    }
+                }
+
+                // # Global fg/bg color options (used by both prompts)
+                if (config.color_mode == 0) {
+                    config.showTabs.push_back(contVec.at("tabFg"));
+                    config.tabMessage.push_back(titleVec.at("fgTitle"));
+                }
+                if (config.color_mode == 2) {
+                    config.showTabs.push_back(contVec.at("tabBg"));
+                    config.tabMessage.push_back(titleVec.at("bgTitle"));
+                }
+
+                // # Left prompt segment color options
+                if (config.use_left) {
+                    if (config.show_user) {
+                        config.showTabs.push_back(contVec.at("tabUserColor"));
+                        config.tabMessage.push_back(titleVec.at("userColorTitle"));
+                    }
+                    if (config.show_path) {
+                        config.showTabs.push_back(contVec.at("tabDirColor"));
+                        config.tabMessage.push_back(titleVec.at("dirColorTitle"));
+                    }
+                    if (config.show_git) {
+                        config.showTabs.push_back(contVec.at("tabGitColor"));
+                        config.tabMessage.push_back(titleVec.at("gitColorTitle"));
+                    }
+                    if (config.show_time) {
+                        config.showTabs.push_back(contVec.at("tabTimeColor"));
+                        config.tabMessage.push_back(titleVec.at("timeColorTitle"));
+                    }
+                    if (config.show_shell) {
+                        config.showTabs.push_back(contVec.at("tabShellColor"));
+                        config.tabMessage.push_back(titleVec.at("shellColorTitle"));
+                    }
+                }
+
+                // # Right prompt segment color options
+                if (config.use_right) {
+                    if (config.show_user_r) {
+                        config.showTabs.push_back(contVec.at("tabUserColorRight"));
+                        config.tabMessage.push_back(titleVec.at("userColorRightTitle"));
+                    }
+                    if (config.show_path_r) {
+                        config.showTabs.push_back(contVec.at("tabDirColorRight"));
+                        config.tabMessage.push_back(titleVec.at("dirColorRightTitle"));
+                    }
+                    if (config.show_git_r) {
+                        config.showTabs.push_back(contVec.at("tabGitColorRight"));
+                        config.tabMessage.push_back(titleVec.at("gitColorRightTitle"));
+                    }
+                    if (config.show_time_r) {
+                        config.showTabs.push_back(contVec.at("tabTimeColorRight"));
+                        config.tabMessage.push_back(titleVec.at("timeColorRightTitle"));
+                    }
+                    if (config.show_shell_r) {
+                        config.showTabs.push_back(contVec.at("tabShellColorRight"));
+                        config.tabMessage.push_back(titleVec.at("shellColorRightTitle"));
+                    }
+                }
+
+                // # Misc options (always added)
+                config.showTabs.push_back(contVec.at("tabTrPrompt"));
+                config.tabMessage.push_back(titleVec.at("trPromptTitle"));
+                config.showTabs.push_back(contVec.at("tabTitle"));
+                config.tabMessage.push_back(titleVec.at("titleTitle"));
+
+                // Rebuild the tab container with all pages
+                auto newTab = Container::Tab(config.showTabs, &config.tabSelected);
+                container->DetachAllChildren();
+                container->Add(newTab);
+            }
+
+            // Don't advance past the last page
+            if (config.tabSelected >= (int) config.showTabs.size() - 1) {
                 return true;
             }
 

@@ -12,20 +12,46 @@ struct ConfigState {
     int tabSelected = 0;
     bool tabsAdded = false;
 
-    // vectors for tabs (in main)
+    bool use_left = false;
+    bool use_right = false;
+    bool use_newlineBlock = false;
+
+    // vectors for left tabs (in main)
     std::vector<ftxui::Component> showTabs;
     std::vector<std::string> tabMessage;
+    // vectors for right tabs (in main)
+    std::vector<ftxui::Component> showRightTabs;
+    std::vector<std::string> tabRightMessage;
 
-    // block choices
+    // left prompt block choices
     bool show_user = false;
     bool show_path = false;
     bool show_git = false;
-    // block colors
+    bool show_time = false;
+    bool show_shell = false;
+    // right prompt block choices
+    bool show_user_r = false;
+    bool show_path_r = false;
+    bool show_git_r = false;
+    bool show_time_r = false;
+    bool show_shell_r = false;
+
+    // general block colors
     std::string color_fg = "#FFFFFF";
     std::string color_bg = "transparent";
+    // left prompt block colors
     std::string color_user = "#FFFFFF";
     std::string color_path = "#FFFFFF";
     std::string color_git = "#FFFFFF";
+    std::string color_time = "#FFFFFF";
+    std::string color_shell = "#FFFFFF";
+    // right prompt block colors
+    std::string color_user_r = "#FFFFFF";
+    std::string color_path_r = "#FFFFFF";
+    std::string color_git_r = "#FFFFFF";
+    std::string color_time_r = "#FFFFFF";
+    std::string color_shell_r = "#FFFFFF";
+
     // diamond choices
     int dmnd_leading = 0;
     int dmnd_connecting = 0;
@@ -35,13 +61,21 @@ struct ConfigState {
     int color_mode = 0;
     int title_mode = 0;
 
-    // colors
+    // setting default colors on pages
     rgb fg_color = { 0, 0, 0 };
     rgb bg_color = { 18, 19, 20 };
+    // left prompt colors
     rgb user_color = { 171, 118, 217 };
     rgb path_color = { 130, 170, 255 };
     rgb git_color = { 255, 223, 109 };
-
+    rgb time_color = { 191, 204, 229 };
+    rgb shell_color = { 140, 223, 109 };
+    // right prompt colors
+    rgb user_color_r = { 171, 118, 217 };
+    rgb path_color_r = { 130, 170, 255 };
+    rgb git_color_r = { 255, 223, 109 };
+    rgb time_color_r = { 191, 204, 229 };
+    rgb shell_color_r = { 140, 223, 109 };
 
     // advanced mode exclusives
     int template_mode = 0;

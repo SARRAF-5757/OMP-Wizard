@@ -9,126 +9,10 @@
 using json = nlohmann::json;
 
 //!--------------------------------------Generate JSON-------------------------------------!//
-void GenerateJSON(const ConfigState& config) {
-    //? Initialize vectors of segment properties and populate them based on selected segments
-    std::vector<std::string> types;
-    std::vector<std::string> templates;
-    std::vector<std::string> colors;
-    std::vector<json> segmentsJSON;
 
-    if (config.show_user) {
-        types.emplace_back("session");
-        templates.emplace_back(" {{ .UserName }} ");
-        colors.push_back(config.color_user);
-    }
-    if (config.show_path) {
-        types.emplace_back("path");
-        templates.emplace_back(" \ue5ff {{ .Path }} ");
-        colors.push_back(config.color_path);
-    }
-    if (config.show_git) {
-        types.emplace_back("git");
-        templates.emplace_back(
-          " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
-          "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
-          ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
-          "}}{{ end }} ");
-        colors.push_back(config.color_git);
-    }
-
-    //? First, just create all the segments with their basic properties
-    // swap where color goes based on color mode
-    if (config.color_mode == 0) {
-        for (size_t i = 0; i < types.size(); ++i) {
-            json individualSegment = {
-                {       "type",        types[i] },
-                {   "template",    templates[i] },
-                {      "style",       "diamond" },
-                { "background",       colors[i] },
-                { "foreground", config.color_fg }
-            };
-            segmentsJSON.push_back(individualSegment);
-        }
-    } else if (config.color_mode == 1) {
-        for (size_t i = 0; i < types.size(); ++i) {
-            json individualSegment = {
-                {       "type",      types[i] },
-                {   "template",  templates[i] },
-                {      "style",     "diamond" },
-                { "background", "transparent" },
-                { "foreground",     colors[i] }
-            };
-            segmentsJSON.push_back(individualSegment);
-        }
-    } else {
-        for (size_t i = 0; i < types.size(); ++i) {
-            json individualSegment = {
-                {       "type",        types[i] },
-                {   "template",    templates[i] },
-                {      "style",       "diamond" },
-                { "background", config.color_bg },
-                { "foreground",       colors[i] }
-            };
-            segmentsJSON.push_back(individualSegment);
-        }
-    }
-
-    //? Add diamonds based on position
-    //@ If only one block is chosen
-    if (types.size() == 1) {
-        //@ leading
-        if (config.dmnd_leading == 0) {               // No diamond if "None" chosen
-            segmentsJSON[0]["leading_diamond"] = "";
-        } else if (config.dmnd_leading > 5) {         // offset fix for some leading diamonds
-            segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
-        } else {
-            segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
-        }
-
-        //@ trailing
-        if (config.dmnd_trailing== 0) {
-          segmentsJSON[0]["trailing_diamond"] = "";
-        } else {
-          segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
-        }
-    //@ Multiple blocks chosen
-    } else {
-        for (size_t i = 0; i < types.size(); i++) {
-            //@ for first block (leading + trailing)
-            if (i == 0) {
-                if (config.dmnd_leading == 0) {
-                    segmentsJSON[0]["leading_diamond"] = "";
-                } else if (config.dmnd_leading > 5) {
-                    segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
-                } else {
-                    segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
-                }
-
-                if (config.dmnd_connecting == 0) {
-                  segmentsJSON[0]["trailing_diamond"] = "";
-                } else {
-                  segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
-                }
-            //@ for last block (trailing)
-            } else if (i == types.size() - 1) {
-                if (config.dmnd_trailing== 0) {
-                  segmentsJSON.back()["trailing_diamond"] = "";
-                } else {
-                  segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
-                }
-            //@ everything else (connecting)
-            } else {
-                if (config.dmnd_connecting == 0) {
-                  segmentsJSON[i]["trailing_diamond"] = "";
-                } else {
-                  segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
-                }
-            }
-        }
-    }
-
-    //? Special Properties
-    for (json& segment : segmentsJSON) {
+// # Helper: add special properties (path style, git options) to a list of segments
+static void addSpecialProperties(std::vector<json>& segments) {
+    for (json& segment : segments) {
         if (segment["type"] == "path") {
             segment["options"] = {
                 { "style", "folder" }
@@ -142,23 +26,234 @@ void GenerateJSON(const ConfigState& config) {
             };
         }
     }
+}
 
-    //? Form our JSON object, starting with just one block that contains an array.
+// # Helper: build segment JSON objects from types/templates/colors using the given color mode and style
+static std::vector<json> buildSegments(const std::vector<std::string>& types, const std::vector<std::string>& templates,
+                                       const std::vector<std::string>& colors, int color_mode, const std::string& color_fg,
+                                       const std::string& color_bg, const std::string& style) {
+    std::vector<json> segmentsJSON;
+    for (size_t i = 0; i < types.size(); ++i) {
+        json seg;
+        seg["type"] = types[i];
+        seg["template"] = templates[i];
+        seg["style"] = style;
+
+        if (color_mode == 0) {   // colored background mode
+            seg["background"] = colors[i];
+            seg["foreground"] = color_fg;
+        } else if (color_mode == 1) {   // transparent background mode
+            seg["background"] = "transparent";
+            seg["foreground"] = colors[i];
+        } else {   // monochrome background mode
+            seg["background"] = color_bg;
+            seg["foreground"] = colors[i];
+        }
+        segmentsJSON.push_back(seg);
+    }
+    return segmentsJSON;
+}
+
+
+void GenerateJSON(const ConfigState& config) {
+    //? Form our JSON object
     json j = {
         { "blocks", json::array() }
     };
-
-    // add hardcoded default stuff
     j["$schema"] = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json";
     j["version"] = 1;
     j["final_space"] = true;
-    j["blocks"].push_back({
-      {      "type",     "prompt" },
-      { "alignment",       "left" },
-      {  "segments", segmentsJSON },
-    });
 
-    //? add optional miscellaneous settings
+
+    //? ======================== LEFT PROMPT ========================
+    if (config.use_left) {
+        std::vector<std::string> types;
+        std::vector<std::string> templates;
+        std::vector<std::string> colors;
+
+        if (config.show_user) {
+            types.emplace_back("session");
+            templates.emplace_back(" {{ .UserName }} ");
+            colors.push_back(config.color_user);
+        }
+        if (config.show_path) {
+            types.emplace_back("path");
+            templates.emplace_back(" \ue5ff {{ .Path }} ");
+            colors.push_back(config.color_path);
+        }
+        if (config.show_git) {
+            types.emplace_back("git");
+            templates.emplace_back(" {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
+              "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
+              ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
+              "}}{{ end }} ");
+            colors.push_back(config.color_git);
+        }
+        if (config.show_time) {
+            types.emplace_back("time");
+            templates.emplace_back("\ue641 {{ .CurrentDate | date .Format }}");
+            colors.push_back(config.color_time);
+        }
+        if (config.show_shell) {
+            types.emplace_back("shell");
+            templates.emplace_back("\uf489  {{ .Name }} ");
+            colors.push_back(config.color_shell);
+        }
+
+
+        // Build segments with diamond style (left prompt uses diamonds)
+        std::vector<json> segmentsJSON = buildSegments(types, templates, colors, config.color_mode, config.color_fg, config.color_bg, "diamond");
+
+        //? Add diamonds based on position
+        if (types.size() == 1) {
+            if (config.dmnd_leading == 0) {
+                segmentsJSON[0]["leading_diamond"] = "";
+            } else if (config.dmnd_leading > 5) {
+                segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+            } else {
+                segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+            }
+            if (config.dmnd_trailing == 0) {
+                segmentsJSON[0]["trailing_diamond"] = "";
+            } else {
+                segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+            }
+        } else {
+            for (size_t i = 0; i < types.size(); i++) {
+                if (i == 0) {
+                    if (config.dmnd_leading == 0) {
+                        segmentsJSON[0]["leading_diamond"] = "";
+                    } else if (config.dmnd_leading > 5) {
+                        segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+                    } else {
+                        segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+                    }
+                    if (config.dmnd_connecting == 0) {
+                        segmentsJSON[0]["trailing_diamond"] = "";
+                    } else {
+                        segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                    }
+                } else if (i == types.size() - 1) {
+                    if (config.dmnd_trailing == 0) {
+                        segmentsJSON.back()["trailing_diamond"] = "";
+                    } else {
+                        segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+                    }
+                } else {
+                    if (config.dmnd_connecting == 0) {
+                        segmentsJSON[i]["trailing_diamond"] = "";
+                    } else {
+                        segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                    }
+                }
+            }
+        }
+
+        addSpecialProperties(segmentsJSON);
+
+        j["blocks"].push_back({
+          {      "type",     "prompt" },
+          { "alignment",       "left" },
+          {  "segments", segmentsJSON },
+        });
+    }
+
+
+    //? ======================== RIGHT PROMPT ========================
+    if (config.use_right) {
+        std::vector<std::string> rightTypes;
+        std::vector<std::string> rightTemplates;
+        std::vector<std::string> rightColors;
+
+        if (config.show_user_r) {
+            rightTypes.emplace_back("session");
+            rightTemplates.emplace_back(" {{ .UserName }} ");
+            rightColors.push_back(config.color_user_r);
+        }
+        if (config.show_path_r) {
+            rightTypes.emplace_back("path");
+            rightTemplates.emplace_back(" \ue5ff {{ .Path }} ");
+            rightColors.push_back(config.color_path_r);
+        }
+        if (config.show_git_r) {
+            rightTypes.emplace_back("git");
+            rightTemplates.emplace_back(" {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
+              "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
+              ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
+              "}}{{ end }} ");
+            rightColors.push_back(config.color_git_r);
+        }
+        if (config.show_time_r) {
+            rightTypes.emplace_back("time");
+            rightTemplates.emplace_back("\ue641 {{ .CurrentDate | date .Format }}");
+            rightColors.push_back(config.color_time_r);
+        }
+        if (config.show_shell_r) {
+            rightTypes.emplace_back("shell");
+            rightTemplates.emplace_back("\uf489  {{ .Name }} ");
+            rightColors.push_back(config.color_shell_r);
+        }
+
+        // Right prompt: use diamond style (like left prompt)
+        std::vector<json> rightSegmentsJSON
+          = buildSegments(rightTypes, rightTemplates, rightColors, config.color_mode, config.color_fg, config.color_bg, "diamond");
+
+        //? Add diamonds based on position (mirror left prompt behaviour)
+        if (rightTypes.size() == 1) {
+            if (config.dmnd_leading == 0) {
+                rightSegmentsJSON[0]["leading_diamond"] = "";
+            } else if (config.dmnd_leading > 5) {
+                rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+            } else {
+                rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+            }
+            if (config.dmnd_trailing == 0) {
+                rightSegmentsJSON[0]["trailing_diamond"] = "";
+            } else {
+                rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+            }
+        } else {
+            for (size_t i = 0; i < rightTypes.size(); i++) {
+                if (i == 0) {
+                    if (config.dmnd_leading == 0) {
+                        rightSegmentsJSON[0]["leading_diamond"] = "";
+                    } else if (config.dmnd_leading > 5) {
+                        rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+                    } else {
+                        rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
+                    }
+                    if (config.dmnd_connecting == 0) {
+                        rightSegmentsJSON[0]["trailing_diamond"] = "";
+                    } else {
+                        rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                    }
+                } else if (i == rightTypes.size() - 1) {
+                    if (config.dmnd_trailing == 0) {
+                        rightSegmentsJSON.back()["trailing_diamond"] = "";
+                    } else {
+                        rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
+                    }
+                } else {
+                    if (config.dmnd_connecting == 0) {
+                        rightSegmentsJSON[i]["trailing_diamond"] = "";
+                    } else {
+                        rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
+                    }
+                }
+            }
+        }
+
+        addSpecialProperties(rightSegmentsJSON);
+
+        j["blocks"].push_back({
+          {      "type",          "prompt" },
+          { "alignment",           "right" },
+          {  "segments", rightSegmentsJSON },
+        });
+    }
+
+
+    // # add optional miscellaneous settings
     if (!config.tr_prompt) {
         j["transient_prompt"] = {
             {   "template",     "\ue285 " },
