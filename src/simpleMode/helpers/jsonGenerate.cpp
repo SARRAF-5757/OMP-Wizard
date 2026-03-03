@@ -83,7 +83,8 @@ void GenerateJSON(const ConfigState& config) {
         }
         if (config.show_git) {
             types.emplace_back("git");
-            templates.emplace_back(" {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
+            templates.emplace_back(
+              " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
               "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
               ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
               "}}{{ end }} ");
@@ -177,7 +178,8 @@ void GenerateJSON(const ConfigState& config) {
         }
         if (config.show_git_r) {
             rightTypes.emplace_back("git");
-            rightTemplates.emplace_back(" {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
+            rightTemplates.emplace_back(
+              " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
               "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
               ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
               "}}{{ end }} ");
@@ -250,6 +252,25 @@ void GenerateJSON(const ConfigState& config) {
           { "alignment",           "right" },
           {  "segments", rightSegmentsJSON },
         });
+
+
+        //* add newline / static left block if right prompt is added
+        {
+            json staticSegment = {
+                {   "template",             "\ue285\ue285" },
+                { "foreground",          config.color_user },
+                {       "type",                   "status" },
+                {      "style",                    "plain" },
+                { "properties", json::object({ { "always_enabled", true } }) },
+            };
+
+            j["blocks"].push_back({
+              {      "type",                       "prompt" },
+              { "alignment",                         "left" },
+              {  "segments", json::array({ staticSegment }) },
+              {   "newline",                           true },
+            });
+        }
     }
 
 
