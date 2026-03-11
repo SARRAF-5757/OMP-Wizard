@@ -12,12 +12,11 @@
 #include "ftxui/dom/elements.hpp"
 #include "nlohmann/json.hpp"
 
-using namespace std;
 using namespace ftxui;
 using json = nlohmann::json;
 
 
-std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(std::string segmentType) {
+std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(std::string segmentType, bool prevIsland, int prevSegment) {
     // Initialize Stuff
     auto screen = ScreenInteractive::Fullscreen();
     int tabSelected = 0;
@@ -130,8 +129,8 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
                   &tabSelected);
                 container->DetachAllChildren();
                 container->Add(tabContainer);
-            } else if (tabSelected == 3 && showTabs[3] == tabIsland) {
-                if (config.island_mode == 1 && config.color_mode == 1) {
+            } else if (tabSelected == 3 && (showTabs[3] == tabIsland)) {
+                if ((config.island_mode == 1 || prevIsland) && config.color_mode == 1) {
                     showTabs.push_back(tabLeadingDmnd);
                     tabMessage.push_back(leadingDmndTitle);
                 }

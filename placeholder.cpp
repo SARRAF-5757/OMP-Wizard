@@ -39,43 +39,52 @@ void advancedMode()
             splicedString.push_back(token);
         }
 
-        // create left
-        if (splicedString[0] == "create" && splicedString.size() == 2) 
+
+        if(splicedString[0] == "create")
         {
-            generation["blocks"].push_back(create(splicedString[1]));
-            if (splicedString[1] == "right") 
+            if(errorHandler(splicedString, generation, numBlocksRight, numBlocksLeft))
             {
-                numBlocksRight++;
+                std::cout << "Error in your command, try again\n";
             }
-            if (splicedString[1] == "left") 
+            else 
             {
-                numBlocksLeft++;
+                generation["blocks"].push_back(create(splicedString[1]));
             }
-        } 
-        else if (splicedString[0] == "generate" && splicedString.size() == 1) 
+        }
+        else if (splicedString[0] == "generate" && splicedString.size() == 1)
         {
             std::cout << "The file containing your new prompt has been generated.\n";
             return;   // file is always being generated to show the output.
-        } 
-        else if (splicedString[0] == "cancel" && splicedString.size() == 1) 
+        }
+        else if (splicedString[0] == "cancel" && splicedString.size() == 1)
         {
             std::cout << "Shutting down, the file containing your prompt will not be generated.\n";
             std::remove("adv-generated-theme.omp.json");   // If cancel then remove the generated file as they dont want anything
             return;
         }
-        if (splicedString.size() == 4
-            && ((splicedString[0] == "left" && numBlocksLeft >= std::stoi(splicedString[1]))
-                || (splicedString[0] == "right" && numBlocksRight >= std::stoi(splicedString[1])))) {
-            if (splicedString[2] == "add") {
+        else if (splicedString[0] == "left" || splicedString[0] == "right")
+        {
+            if(errorHandler(splicedString, generation, numBlocksRight, numBlocksLeft))
+            {
+                std::cout << "Error in your command, try again\n";
+            }
+            else if (splicedString[2] == "add") 
+            {
                 add(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[3]);
                 showPrompt(generation);
-            } else if (splicedString[2] == "edit") {
+            } 
+            else if (splicedString[2] == "edit") 
+            {
                 edit(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[3]);
                 showPrompt(generation);
-            } else if (splicedString[2] == "remove") {
+            } 
+            else if (splicedString[2] == "remove") 
+            {
                 remove(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[3]);
                 showPrompt(generation);
-            } else if (splicedString[2] == "swap") {
+            } 
+            else if (splicedString[2] == "swap") 
+            {
                 swap(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[4], splicedString[5]);
                 showPrompt(generation);
             }
