@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+#include "../../shared/helpers/deploy.hpp"
 #include "../../shared/structs/Config.hpp"
 #include "../../shared/structs/Constants.hpp"
 #include "nlohmann/json.hpp"
@@ -257,10 +258,10 @@ void GenerateJSON(const ConfigState& config) {
         //* add newline / static left block if right prompt is added
         {
             json staticSegment = {
-                {   "template",             "\ue285\ue285" },
-                { "foreground",          config.color_user },
-                {       "type",                   "status" },
-                {      "style",                    "plain" },
+                {   "template",                               "\ue285\ue285" },
+                { "foreground",                            config.color_user },
+                {       "type",                                     "status" },
+                {      "style",                                      "plain" },
                 { "properties", json::object({ { "always_enabled", true } }) },
             };
 
@@ -293,8 +294,6 @@ void GenerateJSON(const ConfigState& config) {
         j["console_title_template"] = "{{ .Shell }} in {{ .PWD }}";
     }
 
-    // output JSON into a file with a 4-indent style (basic JSON formatting)
-    std::ofstream o("generated-theme.omp.json");
-    o << j.dump(4);
-    o.close();
+    // send the JSON to the deployment function, with a 4-indent style (basic JSON formatting)
+    deployConfig(j.dump(4));
 }

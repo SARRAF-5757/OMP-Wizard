@@ -33,6 +33,7 @@ add_executable(
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
+    src/shared/helpers/deploy.cpp
     src/simpleMode/helpers/jsonGenerate.cpp
     src/simpleMode/helpers/genPageContents.cpp
 )
@@ -48,6 +49,7 @@ add_executable(
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
+    src/shared/helpers/deploy.cpp
     src/simpleMode/helpers/jsonGenerate.cpp
     src/simpleMode/helpers/genPageContents.cpp
 )
