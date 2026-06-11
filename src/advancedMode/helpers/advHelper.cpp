@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -27,6 +28,77 @@ unordered_set<std::string> segOptions =
 
 std::vector<unordered_set<std::string>> blockSegs;
 
+std::string stripIslandSpacingPrefix(const std::string& leading) {
+    std::string result = leading;
+    while (!result.empty() && result[0] == ' ') {
+        result = result.substr(1);
+    }
+    return result;
+}
+
+bool segmentNeedsIslandSpacing(const json& segments, std::size_t index) {
+    if (index == 0) {
+        return false;
+    }
+    const auto& prev = segments[index - 1];
+    const auto& curr = segments[index];
+    if (prev.value("background", "") == "transparent") {
+        return false;
+    }
+    return curr.value("island", false) || prev.value("island", false);
+}
+
+bool segmentNeedsLeadingDiamond(const json& segments, std::size_t index) {
+    return index == 0
+        || segments[index].value("island", false)
+        || (index > 0 && segments[index - 1].value("island", false));
+}
+
+void applyIslandSpacingToSegment(json& segments, std::size_t index) {
+    auto& seg = segments[index];
+    std::string leading = stripIslandSpacingPrefix(seg.value("leading_diamond", ""));
+
+    if (segmentNeedsIslandSpacing(segments, index)) {
+        seg["leading_diamond"] = " " + leading;
+    } else {
+        seg["leading_diamond"] = leading;
+    }
+}
+
+void cleanupUnneededLeadingDiamonds(json& segments) {
+    for (std::size_t i = 0; i < segments.size(); i++) {
+        if (!segmentNeedsLeadingDiamond(segments, i)) {
+            segments[i]["leading_diamond"] = "";
+        }
+    }
+}
+
+void refreshBlockIslandSpacing(json& currentGen, std::size_t blockNum) {
+    auto& segments = currentGen["blocks"][blockNum]["segments"];
+    for (std::size_t i = 0; i < segments.size(); i++) {
+        applyIslandSpacingToSegment(segments, i);
+    }
+}
+
+void refreshBlockIslandSpacingAfterRemove(json& currentGen, std::size_t blockNum) {
+    refreshBlockIslandSpacing(currentGen, blockNum);
+    cleanupUnneededLeadingDiamonds(currentGen["blocks"][blockNum]["segments"]);
+}
+
+std::string formatSegmentOptions() {
+    std::vector<std::string> segments(segOptions.begin(), segOptions.end());
+    std::sort(segments.begin(), segments.end());
+
+    std::ostringstream oss;
+    for (std::size_t i = 0; i < segments.size(); i++) {
+        if (i > 0) {
+            oss << ", ";
+        }
+        oss << "\033[1m" << segments[i] << "\033[0m";
+    }
+    return oss.str();
+}
+
 void printUsage() {
     std::cout << 
     "Usage Menu:\n"
@@ -34,9 +106,9 @@ void printUsage() {
                  "created\n"
                  "                                               i.e, left0, left1, left2, left3\n"
                  "[left, right] index \033[4madd\033[0m [segment type]         add a segment to an existing left or right block\n"
+                 "                                               segment types: " << formatSegmentOptions() << "\n"
                  "[left, right] index \033[4medit\033[0m [segment type]        edit an existing segment in an existing left or right block\n"
                  "[left, right] index \033[4mremove\033[0m [segment type]      remove an existing segment from an existing left or right block\n"
-                 "[left, right] index \033[4mswap\033[0m [segment type]        swap two existing segments in an existing left or right block\n"
                  "\033[4mgenerate\033[0m                                       end the program and generate your completed prompt\n"
                  "\033[4mcancel\033[0m                                         cancel both the program and generation of your prompt\n"
                  "\033[4mhelp\033[0m                                           print this usage menu again\n\n";
@@ -47,15 +119,14 @@ create [left, right] [true, false]       create a left or right block, with newl
 [left, right] add [segment type]         add a segment to an existing left or right block
 [left, right] edit [segment type]        edit an existing segment in an existing left or right block
 [left, right] remove [segment type]      remove an existing segment from an existing left or right block
-[left, right] swap [segment type]        swap two existing segments in an existing left or right block
 generate                                 end the program and generate your completed prompt
 cancel                                   cancel both the program and generation of your prompt
 help
 */
-bool errorHandler(std::vector<std::string> command, json& currentGen, std::size_t& numLeftBlocks, std::size_t& numRightBlocks) {
-    std::cout << "Error has been found\n";   // TODO: do this usage.
-    std::unordered_set<std::string> segmentCommands = { "add", "edit", "remove", "swap" };
-    std::unordered_set<std::string> functions = { "generate", "cancel", "help" };
+
+bool errorHandler(std::vector<std::string> command, json& currentGen, int& numRightBlocks, int& numLeftBlocks) {
+    std::unordered_set<std::string> segmentCommands = { "add", "edit", "remove" };
+    std::unordered_set<std::string> functions = { "generate", "cancel", "help", "preview" };
     // CREATE COMMAND
     if(command[0] == "create")
     {
@@ -66,18 +137,23 @@ bool errorHandler(std::vector<std::string> command, json& currentGen, std::size_
 
         if(command[1] == "right")
         {
-            numRightBlocks++;
             return false; // no error
         }
         else if(command[1] == "left")
         {
-            numLeftBlocks++;
             return false; // no error 
         } 
         else 
         {
             return true; // error
         }
+    }
+    
+    if(command[0] == "help" || command[0] == "preview" || command[0] == "generate"){
+        if(command.size() != 1){
+            return true; // error
+        }
+        return false; // no error
     }
 
     if(command[0] == "left" || command[0] == "right")
@@ -86,57 +162,103 @@ bool errorHandler(std::vector<std::string> command, json& currentGen, std::size_
             return true; // error
         }
 
-        if((command[1] == "left" && stoi(command[1]) >= numLeftBlocks) ||
-            (command[1] == "right" && stoi(command[1]) >= numRightBlocks))
-        {
+        if((command[0] == "left" && stoi(command[1]) >= numLeftBlocks) ||
+            (command[0] == "right" && stoi(command[1]) >= numRightBlocks)){
             return true; // error
         }
         
-        if(segmentCommands.find(command[2]) == segmentCommands.end())
-        {
+        if(segmentCommands.find(command[2]) == segmentCommands.end()){
             return true; // error
         }
 
-        if(functions.find(command[3]) == functions.end())
-        {
+        if(segOptions.find(command[3]) == segOptions.end()){
             return true; // error
+        }
+        return false;
+    }
+
+    return true;
+}
+
+
+void reorderBlocksAlternating(json& currentGen) {
+    std::vector<json> leftBlocks;
+    std::vector<json> rightBlocks;
+    std::vector<unordered_set<std::string>> leftSegs;
+    std::vector<unordered_set<std::string>> rightSegs;
+
+    for (std::size_t i = 0; i < currentGen["blocks"].size(); i++) {
+        if (currentGen["blocks"][i]["alignment"] == "left") {
+            leftBlocks.push_back(currentGen["blocks"][i]);
+            leftSegs.push_back(blockSegs[i]);
+        } else {
+            rightBlocks.push_back(currentGen["blocks"][i]);
+            rightSegs.push_back(blockSegs[i]);
+        }
+    }
+
+    currentGen["blocks"] = json::array();
+    blockSegs.clear();
+
+    std::size_t leftIndex = 0;
+    std::size_t rightIndex = 0;
+    bool takeLeft = true;
+
+    while (leftIndex < leftBlocks.size() || rightIndex < rightBlocks.size()) {
+        if (takeLeft && leftIndex < leftBlocks.size()) {
+            currentGen["blocks"].push_back(leftBlocks[leftIndex]);
+            blockSegs.push_back(leftSegs[leftIndex]);
+            leftIndex++;
+            takeLeft = false;
+        } else if (!takeLeft && rightIndex < rightBlocks.size()) {
+            currentGen["blocks"].push_back(rightBlocks[rightIndex]);
+            blockSegs.push_back(rightSegs[rightIndex]);
+            rightIndex++;
+            takeLeft = true;
+        } else if (leftIndex < leftBlocks.size()) {
+            currentGen["blocks"].push_back(leftBlocks[leftIndex]);
+            blockSegs.push_back(leftSegs[leftIndex]);
+            leftIndex++;
+        } else {
+            currentGen["blocks"].push_back(rightBlocks[rightIndex]);
+            blockSegs.push_back(rightSegs[rightIndex]);
+            rightIndex++;
+        }
+    }
+
+    std::size_t leftCount = 0;
+    for (auto& block : currentGen["blocks"]) {
+        if (block["alignment"] == "left") {
+            block["newline"] = leftCount > 0;
+            leftCount++;
+        } else {
+            block["newline"] = false;
         }
     }
 }
 
-
-json create(std::string blockType) {
+json create(std::string blockType, size_t numBlocksLeft, size_t numBlocksRight) {
     blockSegs.push_back({});
+    bool newline = true;
+    if(blockType == "left" && numBlocksLeft == 0){
+        newline = false;
+    }
+    if(blockType == "right" && numBlocksRight == 0){
+        newline = false;
+    }
     json block = {
         {      "type",      "prompt" },
         { "alignment",     blockType },
-        {   "newline",          true },
+        {   "newline",       newline },
         {  "segments", json::array() }
     };
+
     std::cout << "The " << blockType << " block has been created\n";
     return block;
 }
-void addIsland(json& currentGen, std::size_t blockNum, std::string island) {
-    // the block we just added was an island
-    std::size_t finalIndex = currentGen["blocks"][blockNum]["segments"].size() - 1;
-    if (island == "Yes") {
-        if (finalIndex > 0 && currentGen["blocks"][blockNum]["segments"][finalIndex - 1]["background"] != "transparent") {
-            auto& leading = currentGen["blocks"][blockNum]["segments"].back()["leading_diamond"];
-            leading = " " + leading.get<std::string>();
-            std::cout << leading << "\n";
-        }
-    } else {
-        if (finalIndex > 0 && currentGen["blocks"][blockNum]["segments"][finalIndex - 1]["island"] == true
-            && currentGen["blocks"][blockNum]["segments"][finalIndex - 1]["background"] != "transparent") {
-            auto& leading = currentGen["blocks"][blockNum]["segments"].back()["leading_diamond"];
-            leading = " " + leading.get<std::string>();
-            std::cout << leading << "\n";
-        }
-    }
-}
 
 void add(json& currentGen, std::size_t blockNum, std::string segmentType) {
-    bool prevIsland = true;
+    bool prevIsland = false;
     if(blockSegs[blockNum].find(segmentType) == blockSegs[blockNum].end()){
         blockSegs[blockNum].insert(segmentType);
     } else {
@@ -144,12 +266,16 @@ void add(json& currentGen, std::size_t blockNum, std::string segmentType) {
         return;
     }
 
-    if(currentGen["blocks"][blockNum]["segments"].size() > 0) { prevIsland = currentGen["blocks"][blockNum]["segments"].back()["island"]; }
-    auto [fg, bg, island, lead, trail, templ, opt] = menuDisplay(segmentType, prevIsland, -1);
+    bool isFirstSegment = currentGen["blocks"][blockNum]["segments"].empty();
+    if (!isFirstSegment) {
+        prevIsland = currentGen["blocks"][blockNum]["segments"].back().value("island", false);
+    }
+    auto [fg, bg, island, lead, trail, templ, opt] = menuDisplay(segmentType, isFirstSegment, prevIsland);
     if (fg == "cancel") {
         std::cout << "Your operation has been canceled!\n";
         return;
     }
+
     json newSegment = {
         {             "type", segmentType },
         {            "style",   "diamond" },
@@ -195,66 +321,44 @@ void add(json& currentGen, std::size_t blockNum, std::string segmentType) {
     }
     */
     currentGen["blocks"][blockNum]["segments"].push_back(newSegment);
-    addIsland(currentGen, blockNum, island);
+    refreshBlockIslandSpacing(currentGen, blockNum);
     std::cout << "The " << segmentType << " segment has been added to your prompt!\n";
 }
 
-void editIsland(json& currentGen, std::size_t blockNum, std::size_t segmentNum, std::string island, bool prevIsland, bool currIsland) {
-    if (island == "Yes") {
-        if (prevIsland == false) {
-            if (segmentNum > 0 && currentGen["blocks"][blockNum]["segments"][segmentNum - 1]["background"] != "transparent") {
-                auto& leading = currentGen["blocks"][blockNum]["segments"][segmentNum]["leading_diamond"];
-                leading = " " + leading.get<std::string>();
-            }
-            if (currentGen["blocks"][blockNum]["segments"].size() - 1 > segmentNum) {
-                auto& leading2 = currentGen["blocks"][blockNum]["segments"][segmentNum + 1]["leading_diamond"];
-                leading2 = " " + leading2.get<std::string>();
-            }
-        }
-    } else {
-        if (prevIsland == true) {
-            if (currentGen["blocks"][blockNum]["segments"].size() - 1 >= segmentNum + 1) {
-                auto& leading = currentGen["blocks"][blockNum]["segments"][segmentNum + 1]["leading_diamond"];
-                leading = leading.get<std::string>().substr(1);
-            }
-        }
-        if(currIsland == true){
-            if(currentGen["blocks"][blockNum]["segments"].size() - 1 >= segmentNum + 1) {
-                auto& leading = currentGen["blocks"][blockNum]["segments"][segmentNum + 1]["leading_diamond"];
-                leading = leading.get<std::string>().substr(1);
-            }
-        }
-    }
-}
-
 void edit(json& currentGen, std::size_t blockNum, std::string segmentType) {
-    bool prevIsland = true;
+    if (blockSegs[blockNum].find(segmentType) == blockSegs[blockNum].end()) {
+        std::cout << "This segment does not exist within this block, please try again!\n";
+        return;
+    }
+
+    bool prevIsland = false;
     bool currIsland = false;
     std::size_t segmentInd = 0;
-    std::size_t prevSegment = 0;
+    bool found = false;
     for (std::size_t i = 0; i < currentGen["blocks"][blockNum]["segments"].size(); i++) {
         if (currentGen["blocks"][blockNum]["segments"][i]["type"] == segmentType) {
-            if(i == 0){
-                prevIsland = false;
-            } else {
-                prevIsland = currentGen["blocks"][blockNum]["segments"][i-1]["island"];
+            if (i > 0) {
+                prevIsland = currentGen["blocks"][blockNum]["segments"][i - 1].value("island", false);
             }
-            currIsland = currentGen["blocks"][blockNum]["segments"][i]["island"];
+            currIsland = currentGen["blocks"][blockNum]["segments"][i].value("island", false);
             segmentInd = i;
+            found = true;
             break;
         }
     }
-    if(segmentInd == 0){
-        prevSegment = 0;
-    } else {
-        prevSegment = segmentInd - 1;
+    if (!found) {
+        std::cout << "This segment does not exist within this block, please try again!\n";
+        return;
     }
-    std::cout << prevIsland << "\n";
-    auto [fg, bg, island, lead, trail, templ, opt] = menuDisplay(segmentType, prevIsland, prevSegment);
+
+    const bool isFirstSegment = segmentInd == 0;
+    auto [fg, bg, island, lead, trail, templ, opt] = menuDisplayEdit(segmentType, isFirstSegment, prevIsland, currIsland);
     if (fg == "cancel") {
         std::cout << "Your operation has been canceled!\n";
         return;
     }
+
+    const auto& existing = currentGen["blocks"][blockNum]["segments"][segmentInd];
     json newSegment = {
         {             "type", segmentType },
         {            "style",   "diamond" },
@@ -264,12 +368,18 @@ void edit(json& currentGen, std::size_t blockNum, std::string segmentType) {
         { "trailing_diamond",          "" }
     };
 
-    if (lead == "Custom") {
-        std::cout << "Input your custom leading diamond: ";
-        std::cin >> trail;
-        newSegment["leading_diamond"] = lead;
-    } else if (lead != "None") {
-        newSegment["leading_diamond"] = lead;
+    if (existing.contains("island")) {
+        newSegment["island"] = existing["island"];
+    }
+
+    if (isFirstSegment || prevIsland || currIsland) {
+        if (lead == "Custom") {
+            std::cout << "Input your custom leading diamond: ";
+            std::cin >> lead;
+            newSegment["leading_diamond"] = lead;
+        } else if (lead != "None") {
+            newSegment["leading_diamond"] = lead;
+        }
     }
 
     if (trail == "Custom") {
@@ -280,41 +390,28 @@ void edit(json& currentGen, std::size_t blockNum, std::string segmentType) {
         newSegment["trailing_diamond"] = trail;
     }
 
-    if (island == "Yes") {
-        newSegment["island"] = true;
-    } else {
-        newSegment["island"] = false;
-    }
-
     currentGen["blocks"][blockNum]["segments"][segmentInd] = newSegment;
-    editIsland(currentGen, blockNum, segmentInd, island, prevIsland, currIsland);
+    refreshBlockIslandSpacing(currentGen, blockNum);
     std::cout << "The " << segmentType << " segment has been edited!\n";
 }
 
-
 void remove(json& currentGen, std::size_t blockNum, std::string segmentType) {
+    if (blockSegs[blockNum].find(segmentType) == blockSegs[blockNum].end()) {
+        std::cout << "This segment does not exist within this block, please try again!\n";
+        return;
+    }
+
     for (std::size_t i = 0; i < currentGen["blocks"][blockNum]["segments"].size(); i++) {
         if (currentGen["blocks"][blockNum]["segments"][i]["type"] == segmentType) {
             currentGen["blocks"][blockNum]["segments"].erase(currentGen["blocks"][blockNum]["segments"].begin() + i);
-            break;
+            blockSegs[blockNum].erase(segmentType);
+            refreshBlockIslandSpacingAfterRemove(currentGen, blockNum);
+            std::cout << "The " << segmentType << " segment has been removed from your prompt!\n";
+            return;
         }
     }
-    std::cout << "The " << segmentType << " segment has been removed from your prompt!\n";
-}
 
-
-void swap(json& currentGen, std::size_t blockNum, std::string segmentType, std::string segmentType2) {
-    std::size_t seg1Pos, seg2Pos;
-    for (std::size_t i = 0; i < currentGen["blocks"][blockNum]["segments"].size(); i++) {
-        if (currentGen["blocks"][blockNum]["segments"][i]["type"] == segmentType) {
-            seg1Pos = i;
-        } else if (currentGen["blocks"][blockNum]["segments"][i]["type"] == segmentType2) {
-            seg2Pos = i;
-        }
-    }
-    json tempSeg = currentGen["blocks"][blockNum]["segments"][seg1Pos];
-    currentGen["blocks"][blockNum]["segments"][seg1Pos] = currentGen["blocks"][blockNum]["segments"][seg2Pos];
-    currentGen["blocks"][blockNum]["segments"][seg2Pos] = tempSeg;
+    std::cout << "This segment does not exist within this block, please try again!\n";
 }
 
 

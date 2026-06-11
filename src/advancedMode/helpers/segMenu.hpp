@@ -15,12 +15,20 @@
 using namespace ftxui;
 using json = nlohmann::json;
 
+void initAdvancedColorDefaults(ConfigState& config) {
+    config.fg_color = { 255, 255, 255 };
+    config.bg_color = { 0, 0, 255 };
+    config.color_fg = "#FFFFFF";
+    config.color_bg = "#0000FF";
+}
 
-std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(std::string segmentType, bool prevIsland, int prevSegment) {
+std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(
+  std::string segmentType, bool isFirstSegment, bool prevIsland) {
     // Initialize Stuff
     auto screen = ScreenInteractive::Fullscreen();
     int tabSelected = 0;
     ConfigState config;
+    initAdvancedColorDefaults(config);
     bool tabsAdded = false;
     bool cancel = false;
 
@@ -130,7 +138,7 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
                 container->DetachAllChildren();
                 container->Add(tabContainer);
             } else if (tabSelected == 3 && (showTabs[3] == tabIsland)) {
-                if ((config.island_mode == 1 || prevIsland) && config.color_mode == 1) {
+                if ((config.island_mode == 1 || prevIsland || isFirstSegment) && config.color_mode == 1) {
                     showTabs.push_back(tabLeadingDmnd);
                     tabMessage.push_back(leadingDmndTitle);
                 }
@@ -168,4 +176,95 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
     return std::make_tuple(RGBtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), config.color_bg,
                            island_mode_choice[config.island_mode], leading_diamonds[config.dmnd_leading], trailing_diamonds[config.dmnd_trailing],
                            template_mode_choice[config.template_mode], options_mode_choice[config.option_mode]);
+}
+
+std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplayEdit(
+  std::string segmentType, bool isFirstSegment, bool prevIsland, bool currIsland) {
+    auto screen = ScreenInteractive::Fullscreen();
+    int tabSelected = 0;
+    ConfigState config;
+    initAdvancedColorDefaults(config);
+    bool cancel = false;
+
+    string colorModeTitle = "How should the background for " + segmentType + " be colorized?";
+    auto tabColorMode = Radiobox({
+      .entries = adv_color_mode_choice,
+      .selected = &config.color_mode,
+    });
+
+    string fgTitle = "Pick a text color for " + segmentType;
+    auto tabFg = colorPicker(&config.fg_color, config.color_fg);
+
+    string bgTitle = "Pick a background color for " + segmentType;
+    auto tabBg = colorPicker(&config.bg_color, config.color_bg);
+
+    string trailingDmndTitle = "Pick a trailing diamond for " + segmentType;
+    auto tabTrailingDmnd = Radiobox({
+      .entries = trailing_diamonds,
+      .selected = &config.dmnd_trailing,
+    });
+
+    string leadingDmndTitle = "Pick a leading diamond for " + segmentType;
+    auto tabLeadingDmnd = Radiobox({
+      .entries = leading_diamonds,
+      .selected = &config.dmnd_leading,
+    });
+
+    vector<Component> showTabs = { tabFg, tabColorMode };
+    vector<string> tabMessage = { fgTitle, colorModeTitle };
+
+    auto tabContainer = Container::Tab({ showTabs }, &tabSelected);
+
+    auto container = Container::Vertical({ tabContainer });
+
+    auto toRender = Renderer(container, [&] {
+        return vbox({ text(tabMessage[tabSelected]) | hcenter, text(" "), tabContainer->Render() | hcenter, text(" "), text(" "),
+                      vbox({ text("[c] = Cancel editing the segment"), text("[n] = Confirm selections & go to the next screen") }) | hcenter })
+             | vcenter;
+    });
+
+    auto component = CatchEvent(toRender, [&](Event event) {
+        if (event == Event::Character('c')) {
+            screen.ExitLoopClosure()();
+            cancel = true;
+            return true;
+        }
+
+        if (event == Event::Character('n')) {
+            if (tabSelected == 1 && config.color_mode == 1) {
+                showTabs.push_back(tabBg);
+                tabMessage.push_back(bgTitle);
+
+                if (isFirstSegment || prevIsland || currIsland) {
+                    showTabs.push_back(tabLeadingDmnd);
+                    tabMessage.push_back(leadingDmndTitle);
+                }
+
+                showTabs.push_back(tabTrailingDmnd);
+                tabMessage.push_back(trailingDmndTitle);
+
+                tabContainer = Container::Tab({ showTabs }, &tabSelected);
+                container->DetachAllChildren();
+                container->Add(tabContainer);
+            }
+
+            if (tabSelected >= showTabs.size() - 1) {
+                screen.ExitLoopClosure()();
+                return true;
+            }
+
+            tabSelected++;
+        }
+        return false;
+    });
+
+    screen.Loop(component);
+    if (cancel) {
+        return std::make_tuple("cancel", "cancel", "cancel", "cancel", "cancel", "cancel", "cancel");
+    }
+    if (config.color_mode == 1) {
+        config.color_bg = RGBtoHex(config.bg_color.red, config.bg_color.green, config.bg_color.blue);
+    }
+    return std::make_tuple(RGBtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), config.color_bg,
+                           "", leading_diamonds[config.dmnd_leading], trailing_diamonds[config.dmnd_trailing], "", "");
 }

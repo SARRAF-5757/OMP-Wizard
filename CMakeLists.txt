@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(omp-wizard)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -33,7 +34,6 @@ add_executable(
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
-    src/shared/helpers/deploy.cpp
     src/simpleMode/helpers/jsonGenerate.cpp
     src/simpleMode/helpers/genPageContents.cpp
 )
@@ -49,7 +49,6 @@ add_executable(
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
-    src/shared/helpers/deploy.cpp
     src/simpleMode/helpers/jsonGenerate.cpp
     src/simpleMode/helpers/genPageContents.cpp
 )
