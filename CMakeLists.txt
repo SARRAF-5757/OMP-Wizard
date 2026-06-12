@@ -34,6 +34,7 @@ add_executable(
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
+    src/shared/helpers/deploy.cpp
     src/simpleMode/helpers/jsonGenerate.cpp
     src/simpleMode/helpers/genPageContents.cpp
 )
@@ -49,10 +50,11 @@ add_executable(
     src/advancedMode/advancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
+    src/shared/helpers/deploy.cpp
     src/simpleMode/helpers/jsonGenerate.cpp
     src/simpleMode/helpers/genPageContents.cpp
 )
-target_include_directories(omp-wizard PRIVATE src)
+target_include_directories(omp-wizard_debug PRIVATE src)
 target_compile_options(omp-wizard_debug PRIVATE -g -O0)
 set_target_properties(omp-wizard_debug PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
