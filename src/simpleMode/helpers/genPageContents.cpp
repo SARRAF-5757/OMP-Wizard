@@ -8,34 +8,47 @@
 unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config) {
     unordered_map<std::string, ftxui::Component> contVec;
 
+    //* Define checkbox/radiobox options with vertical padding
+    CheckboxOption checkbox_option = CheckboxOption::Simple();
+    auto default_checkbox_transform = checkbox_option.transform;
+    checkbox_option.transform = [default_checkbox_transform](const EntryState& s) {
+        return vbox({ text(""), default_checkbox_transform(s), text("") });
+    };
+
+    RadioboxOption radiobox_option = RadioboxOption::Simple();
+    auto default_radiobox_transform = radiobox_option.transform;
+    radiobox_option.transform = [default_radiobox_transform](const EntryState& s) {
+        return vbox({ text(""), default_radiobox_transform(s), text("") });
+    };
+
     auto tabPickPrompts = Container::Vertical({
-      Checkbox("Left Block", &config.use_left),
-      Checkbox("Right Block", &config.use_right),
+      Checkbox("Left Block", &config.use_left, checkbox_option),
+      Checkbox("Right Block", &config.use_right, checkbox_option),
     });
     auto tabChooseBlocks = Container::Vertical({
-      Checkbox("User Name", &config.show_user),
-      Checkbox("Directory Path", &config.show_path),
-      Checkbox("Git Status", &config.show_git),
-      Checkbox("Time", &config.show_time),
-      Checkbox("Shell Name", &config.show_shell),
+      Checkbox("User Name", &config.show_user, checkbox_option),
+      Checkbox("Directory Path", &config.show_path, checkbox_option),
+      Checkbox("Git Status", &config.show_git, checkbox_option),
+      Checkbox("Time", &config.show_time, checkbox_option),
+      Checkbox("Shell Name", &config.show_shell, checkbox_option),
     });
     auto tabChooseRightBlocks = Container::Vertical({
-      Checkbox("User Name", &config.show_user_r),
-      Checkbox("Directory Path", &config.show_path_r),
-      Checkbox("Git Status", &config.show_git_r),
-      Checkbox("Time", &config.show_time_r),
-      Checkbox("Shell Name", &config.show_shell_r),
+      Checkbox("User Name", &config.show_user_r, checkbox_option),
+      Checkbox("Directory Path", &config.show_path_r, checkbox_option),
+      Checkbox("Git Status", &config.show_git_r, checkbox_option),
+      Checkbox("Time", &config.show_time_r, checkbox_option),
+      Checkbox("Shell Name", &config.show_shell_r, checkbox_option),
     });
 
     contVec["tabPickPrompts"] = (tabPickPrompts);
     contVec["tabChooseBlocks"] = (tabChooseBlocks);
     contVec["tabChooseRightBlocks"] = (tabChooseRightBlocks);
-    contVec["tabColorMode"] = Radiobox({ color_mode_choice, &config.color_mode });
-    contVec["tabTrPrompt"] = Radiobox({ boolean_choice, &config.tr_prompt });
-    contVec["tabTitle"] = Radiobox({ title_choices, &config.title_mode });
-    contVec["tabDmndLeading"] = Radiobox({ leading_diamonds, &config.dmnd_leading });
-    contVec["tabDmndConnecting"] = Radiobox({ trailing_diamonds, &config.dmnd_connecting });
-    contVec["tabDmndTrailing"] = Radiobox({ trailing_diamonds, &config.dmnd_trailing });
+    contVec["tabColorMode"] = Radiobox(RadioboxOption { color_mode_choice, &config.color_mode, radiobox_option.transform });
+    contVec["tabTrPrompt"] = Radiobox(RadioboxOption { boolean_choice, &config.tr_prompt, radiobox_option.transform });
+    contVec["tabTitle"] = Radiobox(RadioboxOption { title_choices, &config.title_mode, radiobox_option.transform });
+    contVec["tabDmndLeading"] = Radiobox(RadioboxOption { leading_diamonds, &config.dmnd_leading, radiobox_option.transform });
+    contVec["tabDmndConnecting"] = Radiobox(RadioboxOption { trailing_diamonds, &config.dmnd_connecting, radiobox_option.transform });
+    contVec["tabDmndTrailing"] = Radiobox(RadioboxOption { trailing_diamonds, &config.dmnd_trailing, radiobox_option.transform });
     contVec["tabFg"] = colorPicker(&config.fg_color, config.color_fg);
     contVec["tabBg"] = colorPicker(&config.bg_color, config.color_bg);
     contVec["tabUserColor"] = colorPicker(&config.user_color, config.color_user);

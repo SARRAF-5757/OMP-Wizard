@@ -98,7 +98,7 @@ void GenerateJSON(const ConfigState& config) {
         }
         if (config.show_shell) {
             types.emplace_back("shell");
-            templates.emplace_back("\uf489  {{ .Name }} ");
+            templates.emplace_back("\uf489 {{ .Name }}");
             colors.push_back(config.color_shell);
         }
 
@@ -193,7 +193,7 @@ void GenerateJSON(const ConfigState& config) {
         }
         if (config.show_shell_r) {
             rightTypes.emplace_back("shell");
-            rightTemplates.emplace_back("\uf489  {{ .Name }} ");
+            rightTemplates.emplace_back("\uf489 {{ .Name }}");
             rightColors.push_back(config.color_shell_r);
         }
 
@@ -212,6 +212,8 @@ void GenerateJSON(const ConfigState& config) {
             }
             if (config.dmnd_trailing == 0) {
                 rightSegmentsJSON[0]["trailing_diamond"] = "";
+            } else if (config.dmnd_trailing > 5) {
+                rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
             } else {
                 rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
             }
@@ -227,18 +229,24 @@ void GenerateJSON(const ConfigState& config) {
                     }
                     if (config.dmnd_connecting == 0) {
                         rightSegmentsJSON[0]["trailing_diamond"] = "";
+                    } else if (config.dmnd_connecting > 5) {
+                        rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
                     } else {
                         rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
                     }
                 } else if (i == rightTypes.size() - 1) {
                     if (config.dmnd_trailing == 0) {
                         rightSegmentsJSON.back()["trailing_diamond"] = "";
+                    } else if (config.dmnd_trailing > 5) {
+                        rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
                     } else {
                         rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
                     }
                 } else {
                     if (config.dmnd_connecting == 0) {
                         rightSegmentsJSON[i]["trailing_diamond"] = "";
+                    } else if (config.dmnd_connecting > 5) {
+                        rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
                     } else {
                         rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
                     }
