@@ -10,20 +10,8 @@
 using json = nlohmann::json;
 
 
-unordered_set<std::string> segOptions = 
-{
-    "git",
-    "os",
-    "shell",
-    "session",
-    "time",
-    "path",
-    "battery",
-    "executiontime",
-    "root",
-    "status",
-    "sysinfo",
-    "spotify",
+unordered_set<std::string> segOptions = {
+    "git", "os", "shell", "session", "time", "path", "battery", "executiontime", "root", "status", "sysinfo", "spotify",
 };
 
 std::vector<unordered_set<std::string>> blockSegs;
@@ -49,9 +37,7 @@ bool segmentNeedsIslandSpacing(const json& segments, std::size_t index) {
 }
 
 bool segmentNeedsLeadingDiamond(const json& segments, std::size_t index) {
-    return index == 0
-        || segments[index].value("island", false)
-        || (index > 0 && segments[index - 1].value("island", false));
+    return index == 0 || segments[index].value("island", false) || (index > 0 && segments[index - 1].value("island", false));
 }
 
 void applyIslandSpacingToSegment(json& segments, std::size_t index) {
@@ -100,13 +86,14 @@ std::string formatSegmentOptions() {
 }
 
 void printUsage() {
-    std::cout << 
-    "Usage Menu:\n"
+    std::cout << "Usage Menu:\n"
                  "\033[4mcreate\033[0m [left, right]                           create a left or right block, for multiple refer to them in the order "
                  "created\n"
                  "                                               i.e, left0, left1, left2, left3\n"
                  "[left, right] index \033[4madd\033[0m [segment type]         add a segment to an existing left or right block\n"
-                 "                                               segment types: " << formatSegmentOptions() << "\n"
+                 "                                               segment types: "
+              << formatSegmentOptions()
+              << "\n"
                  "[left, right] index \033[4medit\033[0m [segment type]        edit an existing segment in an existing left or right block\n"
                  "[left, right] index \033[4mremove\033[0m [segment type]      remove an existing segment from an existing left or right block\n"
                  "\033[4mgenerate\033[0m                                       end the program and generate your completed prompt\n"
@@ -128,51 +115,42 @@ bool errorHandler(std::vector<std::string> command, json& currentGen, int& numRi
     std::unordered_set<std::string> segmentCommands = { "add", "edit", "remove" };
     std::unordered_set<std::string> functions = { "generate", "cancel", "help", "preview" };
     // CREATE COMMAND
-    if(command[0] == "create")
-    {
-        if(command.size() != 2)
-        {
-            return true; // error
+    if (command[0] == "create") {
+        if (command.size() != 2) {
+            return true;   // error
         }
 
-        if(command[1] == "right")
-        {
-            return false; // no error
-        }
-        else if(command[1] == "left")
-        {
-            return false; // no error 
-        } 
-        else 
-        {
-            return true; // error
+        if (command[1] == "right") {
+            return false;   // no error
+        } else if (command[1] == "left") {
+            return false;   // no error
+        } else {
+            return true;   // error
         }
     }
-    
-    if(command[0] == "help" || command[0] == "preview" || command[0] == "generate"){
-        if(command.size() != 1){
-            return true; // error
+
+    if (command[0] == "help" || command[0] == "preview" || command[0] == "generate") {
+        if (command.size() != 1) {
+            return true;   // error
         }
-        return false; // no error
+        return false;   // no error
     }
 
-    if(command[0] == "left" || command[0] == "right")
-    {
-        if(command.size() != 4){
-            return true; // error
+    if (command[0] == "left" || command[0] == "right") {
+        if (command.size() != 4) {
+            return true;   // error
         }
 
-        if((command[0] == "left" && stoi(command[1]) >= numLeftBlocks) ||
-            (command[0] == "right" && stoi(command[1]) >= numRightBlocks)){
-            return true; // error
-        }
-        
-        if(segmentCommands.find(command[2]) == segmentCommands.end()){
-            return true; // error
+        if ((command[0] == "left" && stoi(command[1]) >= numLeftBlocks) || (command[0] == "right" && stoi(command[1]) >= numRightBlocks)) {
+            return true;   // error
         }
 
-        if(segOptions.find(command[3]) == segOptions.end()){
-            return true; // error
+        if (segmentCommands.find(command[2]) == segmentCommands.end()) {
+            return true;   // error
+        }
+
+        if (segOptions.find(command[3]) == segOptions.end()) {
+            return true;   // error
         }
         return false;
     }
@@ -240,10 +218,10 @@ void reorderBlocksAlternating(json& currentGen) {
 json create(std::string blockType, size_t numBlocksLeft, size_t numBlocksRight) {
     blockSegs.push_back({});
     bool newline = true;
-    if(blockType == "left" && numBlocksLeft == 0){
+    if (blockType == "left" && numBlocksLeft == 0) {
         newline = false;
     }
-    if(blockType == "right" && numBlocksRight == 0){
+    if (blockType == "right" && numBlocksRight == 0) {
         newline = false;
     }
     json block = {
@@ -259,7 +237,7 @@ json create(std::string blockType, size_t numBlocksLeft, size_t numBlocksRight) 
 
 void add(json& currentGen, std::size_t blockNum, std::string segmentType) {
     bool prevIsland = false;
-    if(blockSegs[blockNum].find(segmentType) == blockSegs[blockNum].end()){
+    if (blockSegs[blockNum].find(segmentType) == blockSegs[blockNum].end()) {
         blockSegs[blockNum].insert(segmentType);
     } else {
         std::cout << "This segment already exists within this block, please try again!\n";

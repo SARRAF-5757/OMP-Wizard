@@ -22,8 +22,9 @@ void initAdvancedColorDefaults(ConfigState& config) {
     config.color_bg = "#0000FF";
 }
 
-std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(
-  std::string segmentType, bool isFirstSegment, bool prevIsland) {
+std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplay(std::string segmentType,
+                                                                                                                  bool isFirstSegment,
+                                                                                                                  bool prevIsland) {
     // Initialize Stuff
     auto screen = ScreenInteractive::Fullscreen();
     int tabSelected = 0;
@@ -178,8 +179,10 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
                            template_mode_choice[config.template_mode], options_mode_choice[config.option_mode]);
 }
 
-std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplayEdit(
-  std::string segmentType, bool isFirstSegment, bool prevIsland, bool currIsland) {
+std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string> menuDisplayEdit(std::string segmentType,
+                                                                                                                      bool isFirstSegment,
+                                                                                                                      bool prevIsland,
+                                                                                                                      bool currIsland) {
     auto screen = ScreenInteractive::Fullscreen();
     int tabSelected = 0;
     ConfigState config;
@@ -265,6 +268,6 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
     if (config.color_mode == 1) {
         config.color_bg = RGBtoHex(config.bg_color.red, config.bg_color.green, config.bg_color.blue);
     }
-    return std::make_tuple(RGBtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), config.color_bg,
-                           "", leading_diamonds[config.dmnd_leading], trailing_diamonds[config.dmnd_trailing], "", "");
+    return std::make_tuple(RGBtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), config.color_bg, "",
+                           leading_diamonds[config.dmnd_leading], trailing_diamonds[config.dmnd_trailing], "", "");
 }
