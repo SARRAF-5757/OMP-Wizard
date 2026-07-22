@@ -110,8 +110,8 @@ void GenerateJSON(const ConfigState& config) {
         if (types.size() == 1) {
             if (config.dmnd_leading == 0) {
                 segmentsJSON[0]["leading_diamond"] = "";
-            } else if (config.dmnd_leading > 5) {
-                segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+            // } else if (config.dmnd_leading > 5) {
+            //     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
             } else {
                 segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
             }
@@ -125,8 +125,8 @@ void GenerateJSON(const ConfigState& config) {
                 if (i == 0) {
                     if (config.dmnd_leading == 0) {
                         segmentsJSON[0]["leading_diamond"] = "";
-                    } else if (config.dmnd_leading > 5) {
-                        segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+                    // } else if (config.dmnd_leading > 5) {
+                    //     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
                     } else {
                         segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
                     }
@@ -205,15 +205,15 @@ void GenerateJSON(const ConfigState& config) {
         if (rightTypes.size() == 1) {
             if (config.dmnd_leading == 0) {
                 rightSegmentsJSON[0]["leading_diamond"] = "";
-            } else if (config.dmnd_leading > 5) {
-                rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+            // } else if (config.dmnd_leading > 5) {
+            //     rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
             } else {
                 rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
             }
             if (config.dmnd_trailing == 0) {
                 rightSegmentsJSON[0]["trailing_diamond"] = "";
-            } else if (config.dmnd_trailing > 5) {
-                rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
+            // } else if (config.dmnd_trailing > 5) {
+            //     rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
             } else {
                 rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
             }
@@ -222,31 +222,31 @@ void GenerateJSON(const ConfigState& config) {
                 if (i == 0) {
                     if (config.dmnd_leading == 0) {
                         rightSegmentsJSON[0]["leading_diamond"] = "";
-                    } else if (config.dmnd_leading > 5) {
-                        rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
+                    // } else if (config.dmnd_leading > 5) {
+                    //     rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
                     } else {
                         rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
                     }
                     if (config.dmnd_connecting == 0) {
                         rightSegmentsJSON[0]["trailing_diamond"] = "";
-                    } else if (config.dmnd_connecting > 5) {
-                        rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
+                    // } else if (config.dmnd_connecting > 5) {
+                    //     rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
                     } else {
                         rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
                     }
                 } else if (i == rightTypes.size() - 1) {
                     if (config.dmnd_trailing == 0) {
                         rightSegmentsJSON.back()["trailing_diamond"] = "";
-                    } else if (config.dmnd_trailing > 5) {
-                        rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
+                    // } else if (config.dmnd_trailing > 5) {
+                    //     rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
                     } else {
                         rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
                     }
                 } else {
                     if (config.dmnd_connecting == 0) {
                         rightSegmentsJSON[i]["trailing_diamond"] = "";
-                    } else if (config.dmnd_connecting > 5) {
-                        rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
+                    // } else if (config.dmnd_connecting > 5) {
+                    //     rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
                     } else {
                         rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
                     }

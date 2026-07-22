@@ -5,6 +5,7 @@
 #include <sstream>
 #include <unordered_set>
 
+#include "../shared/helpers/deploy.hpp"
 #include "helpers/advHelper.cpp"
 #include "nlohmann/json.hpp"
 
@@ -65,8 +66,10 @@ void advancedMode() {
                 reorderBlocksAlternating(generation);
             }
         } else if (splicedString[0] == "generate" && splicedString.size() == 1) {
-            std::cout << "The file containing your new prompt has been generated.\n";
-            return;   // file is always being generated to show the output.
+            deployConfig(generation.dump(4));
+            std::remove("adv-generated-theme.omp.json");
+            std::cout << "Your prompt configuration has been deployed.\n";
+            return;
         } else if (splicedString[0] == "cancel" && splicedString.size() == 1) {
             std::cout << "Shutting down, the file containing your prompt will not be generated.\n";
             std::remove("adv-generated-theme.omp.json");   // If cancel then remove the generated file as they dont want anything

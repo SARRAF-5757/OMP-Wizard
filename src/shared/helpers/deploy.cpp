@@ -64,6 +64,12 @@ std::string getActiveShell() {
             if (s.find("zsh") != std::string::npos) return "zsh";
             if (s.find("bash") != std::string::npos) return "bash";
             if (s.find("fish") != std::string::npos) return "fish";
+            if (s.find("pwsh") != std::string::npos) return "pwsh";
+            if (s.find("powershell") != std::string::npos) return "powershell";
+            if (s.find("nu") != std::string::npos) return "nu";
+            if (s.find("tcsh") != std::string::npos) return "tcsh";
+            if (s.find("elvish") != std::string::npos) return "elvish";
+            if (s.find("xonsh") != std::string::npos) return "xonsh";
         }
         return "";
     }
@@ -84,12 +90,21 @@ std::filesystem::path getProfilePath(const std::string& shell) {
                                                               : docPath / "WindowsPowerShell" / "Microsoft.PowerShell_profile.ps1";
             return profile;
         }
+    } else if (shell == "nu" || shell == "nushell") {
+        const char* appData = std::getenv("APPDATA");
+        if (appData) {
+            return std::filesystem::path(appData) / "nushell" / "env.nu";
+        }
     }
 #else
     if (!home) return "";
     if (shell == "bash") return std::filesystem::path(home) / ".bashrc";
     if (shell == "zsh") return std::filesystem::path(home) / ".zshrc";
     if (shell == "fish") return std::filesystem::path(home) / ".config" / "fish" / "config.fish";
+    if (shell == "nu" || shell == "nushell") return std::filesystem::path(home) / ".config" / "nushell" / "env.nu";
+    if (shell == "tcsh") return std::filesystem::path(home) / ".tcshrc";
+    if (shell == "elvish") return std::filesystem::path(home) / ".config" / "elvish" / "rc.elv";
+    if (shell == "xonsh") return std::filesystem::path(home) / ".xonshrc";
 #endif
     return "";
 }
@@ -108,6 +123,16 @@ bool updateProfile(const std::filesystem::path& profilePath, const std::filesyst
         initString = "oh-my-posh init fish --config '" + configPath.string() + "' | source";
     } else if (shell == "pwsh" || shell == "powershell") {
         initString = "oh-my-posh init " + shell + " --config '" + configPath.string() + "' | Invoke-Expression";
+    } else if (shell == "cmd") {
+        initString = "@echo off\nFOR /f \"tokens=*\" %%i IN ('oh-my-posh init cmd --config \"" + configPath.string() + "\"') DO %%i";
+    } else if (shell == "nu" || shell == "nushell") {
+        initString = "oh-my-posh init nu --config '" + configPath.string() + "'";
+    } else if (shell == "tcsh") {
+        initString = "eval `oh-my-posh init tcsh --config '" + configPath.string() + "'`";
+    } else if (shell == "elvish") {
+        initString = "eval (oh-my-posh init elvish --config '" + configPath.string() + "' | slurp)";
+    } else if (shell == "xonsh") {
+        initString = "execx($(oh-my-posh init xonsh --config '" + configPath.string() + "'))";
     } else {
         std::cerr << "Error: Unsupported shell: '" << shell << std::endl;
         return false;
