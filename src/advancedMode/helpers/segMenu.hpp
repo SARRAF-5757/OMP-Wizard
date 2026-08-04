@@ -39,7 +39,7 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
       .selected = &config.color_mode,
     });
 
-    string fgTitle = "Pick a text color for " + segmentType;
+    string fgTitle = "Pick a font color for " + segmentType;
     auto tabFg = colorPicker(&config.fg_color, config.color_fg);
 
     string bgTitle = "Pick a background color for " + segmentType;
@@ -173,6 +173,8 @@ std::tuple<std::string, std::string, std::string, std::string, std::string, std:
         return std::make_tuple("cancel", "cancel", "cancel", "cancel", "cancel", "cancel", "cancel");
     } else if (config.color_mode == 1) {
         config.color_bg = RGBtoHex(config.bg_color.red, config.bg_color.green, config.bg_color.blue);
+    } else if(config.color_mode == 0){
+        config.color_bg = "transparent";
     }
     return std::make_tuple(RGBtoHex(config.fg_color.red, config.fg_color.green, config.fg_color.blue), config.color_bg,
                            island_mode_choice[config.island_mode], leading_diamonds[config.dmnd_leading], trailing_diamonds[config.dmnd_trailing],

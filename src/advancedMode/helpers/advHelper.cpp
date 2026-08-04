@@ -251,6 +251,7 @@ void add(json& currentGen, std::size_t blockNum, std::string segmentType) {
     auto [fg, bg, island, lead, trail, templ, opt] = menuDisplay(segmentType, isFirstSegment, prevIsland);
     if (fg == "cancel") {
         std::cout << "Your operation has been canceled!\n";
+        blockSegs[blockNum].erase(segmentType);
         return;
     }
 
