@@ -1,8 +1,8 @@
-#include "advancedMode/advancedMode.hpp"
+#include "advancedMode/AdvancedMode.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 #include "shared/structs/Config.hpp"
-#include "simpleMode/simpleMode.hpp"
+#include "simpleMode/SimpleMode.hpp"
 
 using namespace std;
 using namespace ftxui;

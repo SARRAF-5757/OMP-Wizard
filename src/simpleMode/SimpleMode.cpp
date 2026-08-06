@@ -1,4 +1,4 @@
-#include "simpleMode.hpp"
+#include "SimpleMode.hpp"
 
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"

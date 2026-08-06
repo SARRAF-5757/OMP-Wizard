@@ -30,8 +30,8 @@ FetchContent_MakeAvailable(nlohmann_json)
 add_executable(
     omp-wizard
     src/main.cpp
-    src/simpleMode/simpleMode.cpp
-    src/advancedMode/advancedMode.cpp
+    src/simpleMode/SimpleMode.cpp
+    src/advancedMode/AdvancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
     src/shared/helpers/deploy.cpp
@@ -46,8 +46,8 @@ set_target_properties(omp-wizard PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BIN
 add_executable(
     omp-wizard_debug
     src/main.cpp
-    src/simpleMode/simpleMode.cpp
-    src/advancedMode/advancedMode.cpp
+    src/simpleMode/SimpleMode.cpp
+    src/advancedMode/AdvancedMode.cpp
     src/shared/helpers/convertColors.cpp
     src/shared/helpers/colorPicker.cpp
     src/shared/helpers/deploy.cpp

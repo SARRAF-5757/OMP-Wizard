@@ -1,4 +1,4 @@
-#include "advancedMode.hpp"
+#include "AdvancedMode.hpp"
 
 #include "helpers/advHelper.cpp"
 #include "nlohmann/json.hpp"
