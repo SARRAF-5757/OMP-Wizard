@@ -1,23 +1,20 @@
-#include "AdvancedMode.hpp"
-
-#include "helpers/advHelper.cpp"
-#include "nlohmann/json.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <unordered_set>
 
+#include "advancedMode.hpp"
+#include "helpers/advHelper.cpp"
+#include "nlohmann/json.hpp"
+
 using json = nlohmann::json;
 
 
-void advancedMode() 
-{
+void advancedMode() {
     printUsage();
-    std::size_t numBlocksRight{ 0 };
-    std::size_t numBlocksLeft{ 0 };
-    json generation = 
-    {
+    std::size_t numBlocksRight { 0 };
+    std::size_t numBlocksLeft { 0 };
+    json generation = {
         {      "blocks",                                                                         json::array() },
         {     "$schema", "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json" },
         {     "version",                                                                                     4 },
@@ -28,63 +25,42 @@ void advancedMode()
     std::string inString;
     std::cout << "Input a command: ";
 
-    while (std::getline(std::cin, inString)) 
-    {
+    while (std::getline(std::cin, inString)) {
         // Splice input string
         std::istringstream iss(inString);
         std::string token;
         std::vector<std::string> splicedString;
-        while (iss >> token) 
-        {
+        while (iss >> token) {
             splicedString.push_back(token);
         }
 
 
-        if(splicedString[0] == "create")
-        {
-            if(errorHandler(splicedString, generation, numBlocksRight, numBlocksLeft))
-            {
+        if (splicedString[0] == "create") {
+            if (errorHandler(splicedString, generation, numBlocksRight, numBlocksLeft)) {
                 std::cout << "Error in your command, try again\n";
-            }
-            else 
-            {
+            } else {
                 generation["blocks"].push_back(create(splicedString[1]));
             }
-        }
-        else if (splicedString[0] == "generate" && splicedString.size() == 1)
-        {
+        } else if (splicedString[0] == "generate" && splicedString.size() == 1) {
             std::cout << "The file containing your new prompt has been generated.\n";
             return;   // file is always being generated to show the output.
-        }
-        else if (splicedString[0] == "cancel" && splicedString.size() == 1)
-        {
+        } else if (splicedString[0] == "cancel" && splicedString.size() == 1) {
             std::cout << "Shutting down, the file containing your prompt will not be generated.\n";
             std::remove("adv-generated-theme.omp.json");   // If cancel then remove the generated file as they dont want anything
             return;
-        }
-        else if (splicedString[0] == "left" || splicedString[0] == "right")
-        {
-            if(errorHandler(splicedString, generation, numBlocksRight, numBlocksLeft))
-            {
+        } else if (splicedString[0] == "left" || splicedString[0] == "right") {
+            if (errorHandler(splicedString, generation, numBlocksRight, numBlocksLeft)) {
                 std::cout << "Error in your command, try again\n";
-            }
-            else if (splicedString[2] == "add") 
-            {
+            } else if (splicedString[2] == "add") {
                 add(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[3]);
                 showPrompt(generation);
-            } 
-            else if (splicedString[2] == "edit") 
-            {
+            } else if (splicedString[2] == "edit") {
                 edit(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[3]);
                 showPrompt(generation);
-            } 
-            else if (splicedString[2] == "remove") 
-            {
+            } else if (splicedString[2] == "remove") {
                 remove(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[3]);
                 showPrompt(generation);
-            } 
-            else if (splicedString[2] == "swap") 
-            {
+            } else if (splicedString[2] == "swap") {
                 swap(generation, findBlock(generation, splicedString[0], splicedString[1]), splicedString[4], splicedString[5]);
                 showPrompt(generation);
             }

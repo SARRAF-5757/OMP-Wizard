@@ -1,4 +1,4 @@
-#include "AdvancedMode.hpp"
+#include "advancedMode.hpp"
 
 #include <fstream>
 #include <iostream>
