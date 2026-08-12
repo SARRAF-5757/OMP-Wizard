@@ -12,13 +12,13 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
     CheckboxOption checkbox_option = CheckboxOption::Simple();
     auto default_checkbox_transform = checkbox_option.transform;
     checkbox_option.transform = [default_checkbox_transform](const EntryState& s) {
-        return vbox({ text(""), default_checkbox_transform(s), text("") });
+        return vbox({ text(""), default_checkbox_transform(s) });
     };
 
     RadioboxOption radiobox_option = RadioboxOption::Simple();
     auto default_radiobox_transform = radiobox_option.transform;
     radiobox_option.transform = [default_radiobox_transform](const EntryState& s) {
-        return vbox({ text(""), default_radiobox_transform(s), text("") });
+        return vbox({ text(""), default_radiobox_transform(s) });
     };
 
     auto tabPickPrompts = Container::Vertical({
@@ -91,8 +91,106 @@ unordered_map<std::string, std::string> genPageTitles() {
     titleVec["dmndTrailTitle"] = "Choose Trailing Diamond to Show in your Prompt";
     titleVec["fgTitle"] = "[Both Prompts] Pick a text color";
     titleVec["bgTitle"] = "[Both Prompts] Pick a background color";
-    titleVec["leftColorsCombinedTitle"] = "[Left Prompt] Pick Colors for your Selected Blocks";
-    titleVec["rightColorsCombinedTitle"] = "[Right Prompt] Pick Colors for your Selected Blocks";
+    titleVec["leftColorsCombinedTitle"] = "[Left Prompt] Pick Colors for your Selected Blocks (scroll to reveal more)";
+    titleVec["rightColorsCombinedTitle"] = "[Right Prompt] Pick Colors for your Selected Blocks scroll to reveal more)";
 
     return titleVec;
+}
+
+// Live preview stuff
+struct PreviewSegment {
+    std::string text;
+    rgb bgColor;
+};
+
+static ftxui::Element renderSegments(const std::vector<PreviewSegment>& segments, const ConfigState& config) {
+    if (segments.empty()) return ftxui::text("");
+
+    ftxui::Elements elements;
+
+    auto globalFg = ftxui::Color::RGB(config.fg_color.red, config.fg_color.green, config.fg_color.blue);
+    auto globalBg = ftxui::Color::RGB(config.bg_color.red, config.bg_color.green, config.bg_color.blue);
+
+    std::string leadStr = (config.dmnd_leading == 0) ? "" : leading_diamonds[config.dmnd_leading];
+    std::string connectStr = (config.dmnd_connecting == 0) ? "" : trailing_diamonds[config.dmnd_connecting];
+    std::string trailStr = (config.dmnd_trailing == 0) ? "" : trailing_diamonds[config.dmnd_trailing];
+
+    for (size_t i = 0; i < segments.size(); ++i) {
+        auto bgRGB = ftxui::Color::RGB(segments[i].bgColor.red, segments[i].bgColor.green, segments[i].bgColor.blue);
+        ftxui::Color textCol, bgCol, diamondCol;
+
+        if (config.color_mode == 0) {   // colored bg
+            textCol = globalFg;
+            bgCol = bgRGB;
+            diamondCol = bgRGB;
+        } else if (config.color_mode == 1) {   // transparent
+            textCol = bgRGB;
+            bgCol = ftxui::Color::Default;
+            diamondCol = bgRGB;
+        } else {   // monochrome
+            textCol = bgRGB;
+            bgCol = globalBg;
+            diamondCol = globalBg;
+        }
+
+        // Add leading diamond
+        if (i == 0 && !leadStr.empty()) {
+            if (config.color_mode == 0) {
+                elements.push_back(ftxui::text(leadStr) | ftxui::color(bgRGB) | ftxui::bgcolor(ftxui::Color::Default));
+            } else {
+                elements.push_back(ftxui::text(leadStr) | ftxui::color(diamondCol) | ftxui::bgcolor(ftxui::Color::Default));
+            }
+        } else if (i > 0 && !connectStr.empty()) {
+            if (config.color_mode == 0) {
+                auto prevBgRGB = ftxui::Color::RGB(segments[i - 1].bgColor.red, segments[i - 1].bgColor.green, segments[i - 1].bgColor.blue);
+                elements.push_back(ftxui::text(connectStr) | ftxui::color(prevBgRGB) | ftxui::bgcolor(bgRGB));
+            } else {
+                elements.push_back(ftxui::text(connectStr) | ftxui::color(textCol) | ftxui::bgcolor(bgCol));
+            }
+        }
+
+        elements.push_back(ftxui::text(segments[i].text) | ftxui::color(textCol) | ftxui::bgcolor(bgCol));
+
+        // Add trailing diamond
+        if (i == segments.size() - 1 && !trailStr.empty()) {
+            if (config.color_mode == 0) {
+                elements.push_back(ftxui::text(trailStr) | ftxui::color(bgRGB) | ftxui::bgcolor(ftxui::Color::Default));
+            } else {
+                elements.push_back(ftxui::text(trailStr) | ftxui::color(diamondCol) | ftxui::bgcolor(ftxui::Color::Default));
+            }
+        }
+    }
+
+    return ftxui::hbox(elements);
+}
+
+ftxui::Element buildLivePreview(const ConfigState& config) {
+    std::vector<PreviewSegment> leftSegments;
+    if (config.use_left) {
+        if (config.show_os) leftSegments.push_back({ " OS ", config.os_color });
+        if (config.show_user) leftSegments.push_back({ " user@host ", config.user_color });
+        if (config.show_path) leftSegments.push_back({ " ~/dir ", config.path_color });
+        if (config.show_git) leftSegments.push_back({ " main ", config.git_color });
+        if (config.show_time) leftSegments.push_back({ " 12:34 ", config.time_color });
+        if (config.show_shell) leftSegments.push_back({ " bash ", config.shell_color });
+        if (config.show_executiontime) leftSegments.push_back({ " 123ms ", config.executiontime_color });
+        if (config.show_battery) leftSegments.push_back({ " 100% ", config.battery_color });
+    }
+
+    std::vector<PreviewSegment> rightSegments;
+    if (config.use_right) {
+        if (config.show_os_r) rightSegments.push_back({ " OS ", config.os_color_r });
+        if (config.show_user_r) rightSegments.push_back({ " user@host ", config.user_color_r });
+        if (config.show_path_r) rightSegments.push_back({ " ~/dir ", config.path_color_r });
+        if (config.show_git_r) rightSegments.push_back({ " main ", config.git_color_r });
+        if (config.show_time_r) rightSegments.push_back({ " 12:34 ", config.time_color_r });
+        if (config.show_shell_r) rightSegments.push_back({ " bash ", config.shell_color_r });
+        if (config.show_executiontime_r) rightSegments.push_back({ " 123ms ", config.executiontime_color_r });
+        if (config.show_battery_r) rightSegments.push_back({ " 100% ", config.battery_color_r });
+    }
+
+    auto leftEl = renderSegments(leftSegments, config);
+    auto rightEl = renderSegments(rightSegments, config);
+
+    return ftxui::hbox({ leftEl, ftxui::filler(), rightEl });
 }

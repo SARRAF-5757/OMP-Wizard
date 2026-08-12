@@ -55,15 +55,15 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
                 auto combinedRender = Renderer(combined, [combined, contVec, &config] {
                     Elements cols;
                     if (config.use_left) {
-                        cols.push_back(vbox({ text("Left Blocks") | bold | hcenter, text(""), contVec.at("tabChooseBlocks")->Render() }) | flex);
+                        cols.push_back(vbox({ text("Left Blocks") | bold | hcenter | color(Color::LightSlateGrey) | underlined, contVec.at("tabChooseBlocks")->Render() }) | flex);
                     }
                     if (config.use_left && config.use_right) {
                         cols.push_back(text("   "));
-                        cols.push_back(separator());
+                        cols.push_back(separator() | color(Color::LightSlateGrey));
                         cols.push_back(text("   "));
                     }
                     if (config.use_right) {
-                        cols.push_back(vbox({ text("Right Blocks") | bold | hcenter, text(""), contVec.at("tabChooseRightBlocks")->Render() })
+                        cols.push_back(vbox({ text("Right Blocks") | bold | hcenter | color(Color::LightSlateGrey) | underlined, contVec.at("tabChooseRightBlocks")->Render() })
                                        | flex);
                     }
                     return hbox(cols);
@@ -225,7 +225,7 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
         if (s.focused) {
             return element | bgcolor(Color::Red) | color(Color::Black) | bold;
         } else {
-            return element;
+            return element | color(Color::MediumPurple);
         }
     };
 
@@ -235,7 +235,7 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
         if (s.focused) {
             return element | bgcolor(Color::Green) | color(Color::Black) | bold;
         } else {
-            return element;
+            return element | color(Color::MediumPurple);
         }
     };
 
@@ -245,7 +245,7 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
         if (s.focused) {
             return element | bgcolor(Color::Blue) | color(Color::Black) | bold;
         } else {
-            return element;
+            return element | color(Color::MediumPurple);
         }
     };
 
@@ -285,23 +285,38 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
             }
         }
 
+        auto livePreview = vbox({
+            separator() | color(Color::LightSlateGrey),
+            text("Preview") | bold | hcenter | color(Color::Yellow),
+            buildLivePreview(config),
+            separator() | color(Color::LightSlateGrey)
+        });
+
         if (is_tab_titles_page) {
-            return vbox({ text(config.tabMessage[config.tabSelected]) | bold | hcenter, text(" "), container->Render() | hcenter, text(" "),
-                          text(" "),
-                          hbox({ buttons_vbox->Render(), vbox({ explanation_line(" = Quit the wizard without generating config file"),
-                                                                explanation_line(" = End the wizard and generate config file"),
-                                                                text("      (will use defaults if all options are not specified)") }) })
-                            | hcenter })
-                 | vcenter;
+            return vbox({
+                window(text(""), text(" " + config.tabMessage[config.tabSelected] + " ") | bold | color(Color::Cyan)) | hcenter | color(Color::LightSlateGrey),
+                text(" "),
+                container->Render() | hcenter,
+                text(" "),
+                livePreview,
+                hbox({ buttons_vbox->Render(), vbox({ explanation_line(" = Quit the wizard without generating config file"),
+                                                      explanation_line(" = End the wizard and generate config file"),
+                                                      text("      (will use defaults if all options are not specified)") }) })
+                    | hcenter })
+            | vcenter;
         } else {
-            return vbox({ text(config.tabMessage[config.tabSelected]) | bold | hcenter, text(" "), container->Render() | hcenter, text(" "),
-                          text(" "),
-                          hbox({ buttons_vbox->Render(), vbox({ explanation_line(" = Quit the wizard without generating config file"),
-                                                                explanation_line(" = Confirm selections & go to the next screen"),
-                                                                explanation_line(" = End the wizard and generate config file"),
-                                                                text("      (will use defaults if all options are not specified)") }) })
-                            | hcenter })
-                 | vcenter;
+            return vbox({
+                window(text(""), text(" " + config.tabMessage[config.tabSelected] + " ") | bold | color(Color::Cyan)) | hcenter | color(Color::LightSlateGrey),
+                text(" "),
+                container->Render() | hcenter,
+                text(" "),
+                livePreview,
+                hbox({ buttons_vbox->Render(), vbox({ explanation_line(" = Quit the wizard without generating config file"),
+                                                      explanation_line(" = Confirm selections & go to the next screen"),
+                                                      explanation_line(" = End the wizard and generate config file"),
+                                                      text("      (will use defaults if all options are not specified)") }) })
+                    | hcenter })
+            | vcenter;
         }
     });
 

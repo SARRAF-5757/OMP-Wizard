@@ -35,7 +35,7 @@ int main() {
         if (s.focused) {
             return element | bgcolor(Color::Red) | color(Color::Black) | bold;
         } else {
-            return element;
+            return element | color(Color::MediumPurple);
         }
     };
 
@@ -45,7 +45,7 @@ int main() {
         if (s.focused) {
             return element | bgcolor(Color::Green) | color(Color::Black) | bold;
         } else {
-            return element;
+            return element | color(Color::MediumPurple);
         }
     };
 
