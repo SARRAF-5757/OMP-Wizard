@@ -82,14 +82,33 @@ std::filesystem::path getProfilePath(const std::string& shell) {
     const char* home = std::getenv("HOME");
 #ifdef _WIN32
     if (shell == "pwsh" || shell == "powershell") {
+        std::array<char, 256> buffer;
+        std::string result;
+        std::string cmd = shell + " -NoProfile -Command \"echo $PROFILE\"";
+        FILE* pipe = POPEN(cmd.c_str(), "r");
+        if (pipe) {
+            while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+                result += buffer.data();
+            }
+            PCLOSE(pipe);
+            result.erase(std::remove_if(result.begin(), result.end(), [](unsigned char x) { return std::isspace(x) || x == '\r' || x == '\n'; }), result.end());
+            if (!result.empty()) {
+                return std::filesystem::path(result);
+            }
+        }
+        // Fallback if querying fails
         const char* userProfile = std::getenv("USERPROFILE");
         if (userProfile) {
-            // PowerShell profiles are usually in Documents\PowerShell
             std::filesystem::path docPath = std::filesystem::path(userProfile) / "Documents";
-            std::filesystem::path profile = (shell == "pwsh") ? docPath / "PowerShell" / "Microsoft.PowerShell_profile.ps1"
-                                                              : docPath / "WindowsPowerShell" / "Microsoft.PowerShell_profile.ps1";
-            return profile;
+            return (shell == "pwsh") ? docPath / "PowerShell" / "Microsoft.PowerShell_profile.ps1"
+                                     : docPath / "WindowsPowerShell" / "Microsoft.PowerShell_profile.ps1";
         }
+    } else if (shell == "cmd") {
+        const char* localAppData = std::getenv("LOCALAPPDATA");
+        if (localAppData) {
+            return std::filesystem::path(localAppData) / "oh-my-posh" / "omp_init.cmd";
+        }
+        return std::filesystem::path("C:/") / "omp_init.cmd";
     } else if (shell == "nu" || shell == "nushell") {
         const char* appData = std::getenv("APPDATA");
         if (appData) {
@@ -98,8 +117,20 @@ std::filesystem::path getProfilePath(const std::string& shell) {
     }
 #else
     if (!home) return "";
-    if (shell == "bash") return std::filesystem::path(home) / ".bashrc";
-    if (shell == "zsh") return std::filesystem::path(home) / ".zshrc";
+    if (shell == "bash") {
+        std::filesystem::path bashrc = std::filesystem::path(home) / ".bashrc";
+        if (!std::filesystem::exists(bashrc) && std::filesystem::exists(std::filesystem::path(home) / ".bash_profile")) {
+            return std::filesystem::path(home) / ".bash_profile";
+        }
+        return bashrc;
+    }
+    if (shell == "zsh") {
+        std::filesystem::path zshrc = std::filesystem::path(home) / ".zshrc";
+        if (!std::filesystem::exists(zshrc) && std::filesystem::exists(std::filesystem::path(home) / ".zprofile")) {
+            return std::filesystem::path(home) / ".zprofile";
+        }
+        return zshrc;
+    }
     if (shell == "fish") return std::filesystem::path(home) / ".config" / "fish" / "config.fish";
     if (shell == "nu" || shell == "nushell") return std::filesystem::path(home) / ".config" / "nushell" / "env.nu";
     if (shell == "tcsh") return std::filesystem::path(home) / ".tcshrc";
@@ -145,6 +176,12 @@ bool updateProfile(const std::filesystem::path& profilePath, const std::filesyst
             std::string line;
             while (std::getline(profileRead, line)) {
                 if (line.find(configPath.string()) != std::string::npos) {
+                    if (shell == "cmd") {
+#ifdef _WIN32
+                        std::string regCmd = "reg add \"HKCU\\Software\\Microsoft\\Command Processor\" /v AutoRun /t REG_EXPAND_SZ /d \"\\\"" + profilePath.string() + "\\\"\" /f >nul 2>&1";
+                        std::system(regCmd.c_str());
+#endif
+                    }
                     return true;
                 }
             }
@@ -165,6 +202,13 @@ bool updateProfile(const std::filesystem::path& profilePath, const std::filesyst
     profileWrite << "\n# Oh My Posh configuration wizard generated entry\n";
     profileWrite << initString << "\n";
     profileWrite.close();
+
+    if (shell == "cmd") {
+#ifdef _WIN32
+        std::string regCmd = "reg add \"HKCU\\Software\\Microsoft\\Command Processor\" /v AutoRun /t REG_EXPAND_SZ /d \"\\\"" + profilePath.string() + "\\\"\" /f >nul 2>&1";
+        std::system(regCmd.c_str());
+#endif
+    }
 
     return true;
 }
