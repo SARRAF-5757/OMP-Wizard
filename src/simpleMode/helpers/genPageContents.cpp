@@ -31,6 +31,9 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Git Status", &config.show_git, checkbox_option),
       Checkbox("Time", &config.show_time, checkbox_option),
       Checkbox("Shell Name", &config.show_shell, checkbox_option),
+      Checkbox("Execution Time", &config.show_executiontime, checkbox_option),
+      Checkbox("Battery", &config.show_battery, checkbox_option),
+      Checkbox("OS Icon", &config.show_os, checkbox_option),
     });
     auto tabChooseRightBlocks = Container::Vertical({
       Checkbox("User Name", &config.show_user_r, checkbox_option),
@@ -38,6 +41,9 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Git Status", &config.show_git_r, checkbox_option),
       Checkbox("Time", &config.show_time_r, checkbox_option),
       Checkbox("Shell Name", &config.show_shell_r, checkbox_option),
+      Checkbox("Execution Time", &config.show_executiontime_r, checkbox_option),
+      Checkbox("Battery", &config.show_battery_r, checkbox_option),
+      Checkbox("OS Icon", &config.show_os_r, checkbox_option),
     });
 
     contVec["tabPickPrompts"] = (tabPickPrompts);
@@ -61,6 +67,12 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
     contVec["tabGitColorRight"] = colorPicker(&config.git_color_r, config.color_git_r);
     contVec["tabTimeColorRight"] = colorPicker(&config.time_color_r, config.color_time_r);
     contVec["tabShellColorRight"] = colorPicker(&config.shell_color_r, config.color_shell_r);
+    contVec["tabExecutionTimeColor"] = colorPicker(&config.executiontime_color, config.color_executiontime);
+    contVec["tabBatteryColor"] = colorPicker(&config.battery_color, config.color_battery);
+    contVec["tabOsColor"] = colorPicker(&config.os_color, config.color_os);
+    contVec["tabExecutionTimeColorRight"] = colorPicker(&config.executiontime_color_r, config.color_executiontime_r);
+    contVec["tabBatteryColorRight"] = colorPicker(&config.battery_color_r, config.color_battery_r);
+    contVec["tabOsColorRight"] = colorPicker(&config.os_color_r, config.color_os_r);
 
     return contVec;
 }
@@ -70,8 +82,7 @@ unordered_map<std::string, std::string> genPageTitles() {
     unordered_map<std::string, std::string> titleVec;
 
     titleVec["promptPickTitle"] = "Which prompt sides do you want to configure?";
-    titleVec["blocksTitle"] = "Choose Components for the Left Prompt";
-    titleVec["rightBlocksTitle"] = "Choose Components for the Right Prompt";
+    titleVec["blocksCombinedTitle"] = "Choose Components for your Prompts";
     titleVec["colorModeTitle"] = "How should the prompt(s) be colorized?";
     titleVec["trPromptTitle"] = "Transient Prompt: Do you want to reduce clutter by shrinking your prompt after you hit Enter?";
     titleVec["titleTitle"] = "What should the terminal tab titles look like?";
@@ -80,16 +91,8 @@ unordered_map<std::string, std::string> genPageTitles() {
     titleVec["dmndTrailTitle"] = "Choose Trailing Diamond to Show in your Prompt";
     titleVec["fgTitle"] = "[Both Prompts] Pick a text color";
     titleVec["bgTitle"] = "[Both Prompts] Pick a background color";
-    titleVec["userColorTitle"] = "[Left Prompt] Pick a color for your user block";
-    titleVec["dirColorTitle"] = "[Left Prompt] Pick a color for your directory block";
-    titleVec["gitColorTitle"] = "[Left Prompt] Pick a color for your git block";
-    titleVec["timeColorTitle"] = "[Left Prompt] Pick a color for your time block";
-    titleVec["shellColorTitle"] = "[Left Prompt] Pick a color for your shell block";
-    titleVec["userColorRightTitle"] = "[Right Prompt] Pick a color for your user block";
-    titleVec["dirColorRightTitle"] = "[Right Prompt] Pick a color for your directory block";
-    titleVec["gitColorRightTitle"] = "[Right Prompt] Pick a color for your git block";
-    titleVec["timeColorRightTitle"] = "[Right Prompt] Pick a color for your time block";
-    titleVec["shellColorRightTitle"] = "[Right Prompt] Pick a color for your shell block";
+    titleVec["leftColorsCombinedTitle"] = "[Left Prompt] Pick Colors for your Selected Blocks";
+    titleVec["rightColorsCombinedTitle"] = "[Right Prompt] Pick Colors for your Selected Blocks";
 
     return titleVec;
 }

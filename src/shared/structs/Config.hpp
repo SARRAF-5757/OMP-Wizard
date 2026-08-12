@@ -29,12 +29,18 @@ struct ConfigState {
     bool show_git = false;
     bool show_time = false;
     bool show_shell = false;
+    bool show_executiontime = false;
+    bool show_battery = false;
+    bool show_os = false;
     // right prompt block choices
     bool show_user_r = false;
     bool show_path_r = false;
     bool show_git_r = false;
     bool show_time_r = false;
     bool show_shell_r = false;
+    bool show_executiontime_r = false;
+    bool show_battery_r = false;
+    bool show_os_r = false;
 
     // general block colors
     std::string color_fg = "#FFFFFF";
@@ -45,12 +51,18 @@ struct ConfigState {
     std::string color_git = "#FFFFFF";
     std::string color_time = "#FFFFFF";
     std::string color_shell = "#FFFFFF";
+    std::string color_executiontime = "#FFFFFF";
+    std::string color_battery = "#FFFFFF";
+    std::string color_os = "#FFFFFF";
     // right prompt block colors
     std::string color_user_r = "#FFFFFF";
     std::string color_path_r = "#FFFFFF";
     std::string color_git_r = "#FFFFFF";
     std::string color_time_r = "#FFFFFF";
     std::string color_shell_r = "#FFFFFF";
+    std::string color_executiontime_r = "#FFFFFF";
+    std::string color_battery_r = "#FFFFFF";
+    std::string color_os_r = "#FFFFFF";
 
     // diamond choices
     int dmnd_leading = 0;
@@ -70,12 +82,18 @@ struct ConfigState {
     rgb git_color = { 255, 223, 109 };
     rgb time_color = { 191, 204, 229 };
     rgb shell_color = { 140, 223, 109 };
+    rgb executiontime_color = { 255, 255, 100 };
+    rgb battery_color = { 255, 100, 100 };
+    rgb os_color = { 100, 200, 255 };
     // right prompt colors
     rgb user_color_r = { 171, 118, 217 };
     rgb path_color_r = { 130, 170, 255 };
     rgb git_color_r = { 255, 223, 109 };
     rgb time_color_r = { 191, 204, 229 };
     rgb shell_color_r = { 140, 223, 109 };
+    rgb executiontime_color_r = { 255, 255, 100 };
+    rgb battery_color_r = { 255, 100, 100 };
+    rgb os_color_r = { 100, 200, 255 };
 
     // advanced mode exclusives
     int template_mode = 0;

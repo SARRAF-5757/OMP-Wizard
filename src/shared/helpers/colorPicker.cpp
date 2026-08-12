@@ -7,12 +7,25 @@
 using namespace std;
 using namespace ftxui;
 
+class DisableMouseWheel : public ComponentBase {
+public:
+    DisableMouseWheel(Component child) {
+        Add(child);
+    }
+    bool OnEvent(Event event) override {
+        if (event.is_mouse() && (event.mouse().button == Mouse::WheelUp || event.mouse().button == Mouse::WheelDown)) {
+            return false; 
+        }
+        return ComponentBase::OnEvent(event);
+    }
+};
+
 //@ To create tab components for color selector tabs
 Component colorPicker(rgb* rgbValues, string& hex) {
     //* Color Sliders
-    auto slider_r = Slider("Red   :", &rgbValues->red, 0, 255, 1);
-    auto slider_g = Slider("Green :", &rgbValues->green, 0, 255, 1);
-    auto slider_b = Slider("Blue  :", &rgbValues->blue, 0, 255, 1);
+    auto slider_r = std::make_shared<DisableMouseWheel>(Slider("Red   :", &rgbValues->red, 0, 255, 1));
+    auto slider_g = std::make_shared<DisableMouseWheel>(Slider("Green :", &rgbValues->green, 0, 255, 1));
+    auto slider_b = std::make_shared<DisableMouseWheel>(Slider("Blue  :", &rgbValues->blue, 0, 255, 1));
 
     //* Text area (Input)
     InputOption hexOption;

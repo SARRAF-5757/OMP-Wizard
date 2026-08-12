@@ -46,13 +46,30 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
             }
 
             // Add block selection pages for chosen sides
-            if (config.use_left) {
-                config.showTabs.push_back(contVec.at("tabChooseBlocks"));
-                config.tabMessage.push_back(titleVec.at("blocksTitle"));
-            }
-            if (config.use_right) {
-                config.showTabs.push_back(contVec.at("tabChooseRightBlocks"));
-                config.tabMessage.push_back(titleVec.at("rightBlocksTitle"));
+            std::vector<Component> blockCols;
+            if (config.use_left) blockCols.push_back(contVec.at("tabChooseBlocks"));
+            if (config.use_right) blockCols.push_back(contVec.at("tabChooseRightBlocks"));
+
+            if (!blockCols.empty()) {
+                auto combined = Container::Horizontal(blockCols);
+                auto combinedRender = Renderer(combined, [combined, contVec, &config] {
+                    Elements cols;
+                    if (config.use_left) {
+                        cols.push_back(vbox({ text("Left Blocks") | bold | hcenter, text(""), contVec.at("tabChooseBlocks")->Render() }) | flex);
+                    }
+                    if (config.use_left && config.use_right) {
+                        cols.push_back(text("   "));
+                        cols.push_back(separator());
+                        cols.push_back(text("   "));
+                    }
+                    if (config.use_right) {
+                        cols.push_back(vbox({ text("Right Blocks") | bold | hcenter, text(""), contVec.at("tabChooseRightBlocks")->Render() })
+                                       | flex);
+                    }
+                    return hbox(cols);
+                });
+                config.showTabs.push_back(combinedRender);
+                config.tabMessage.push_back(titleVec.at("blocksCombinedTitle"));
             }
 
             // Add color mode page
@@ -66,22 +83,20 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
         }
 
         // # Prevent advancing if no blocks are selected on a block-selection page
-        //  Left block selection page is at index 1 (only when use_left is true)
-        if (config.use_left && config.tabSelected == 1) {
-            if (!(config.show_user || config.show_path || config.show_git || config.show_time || config.show_shell)) {
-                return;
-            }
-        }
-        // Right block selection page index depends on whether left was also chosen
-        int rightBlocksIndex = config.use_left ? 2 : 1;
-        if (config.use_right && config.tabSelected == rightBlocksIndex) {
-            if (!(config.show_user_r || config.show_path_r || config.show_git_r || config.show_time_r || config.show_shell_r)) {
+        if (config.tabSelected == 1) {
+            bool leftOk = !config.use_left
+                       || (config.show_user || config.show_path || config.show_git || config.show_time || config.show_shell
+                           || config.show_executiontime || config.show_battery || config.show_os);
+            bool rightOk = !config.use_right
+                        || (config.show_user_r || config.show_path_r || config.show_git_r || config.show_time_r || config.show_shell_r
+                            || config.show_executiontime_r || config.show_battery_r || config.show_os_r);
+            if (!leftOk || !rightOk) {
                 return;
             }
         }
 
         //! Add all remaining tabs
-        int colorModeIndex = 1 + (config.use_left ? 1 : 0) + (config.use_right ? 1 : 0);   // Figure out where the color mode page ended up
+        int colorModeIndex = 2;   // prompt picker is 0, and unified block selector is 1, this is 2
 
         if (!config.tabsAdded && config.tabSelected == colorModeIndex) {
             config.tabsAdded = true;
@@ -125,49 +140,61 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
 
             // # Left prompt segment color options
             if (config.use_left) {
-                if (config.show_user) {
-                    config.showTabs.push_back(contVec.at("tabUserColor"));
-                    config.tabMessage.push_back(titleVec.at("userColorTitle"));
-                }
-                if (config.show_path) {
-                    config.showTabs.push_back(contVec.at("tabDirColor"));
-                    config.tabMessage.push_back(titleVec.at("dirColorTitle"));
-                }
-                if (config.show_git) {
-                    config.showTabs.push_back(contVec.at("tabGitColor"));
-                    config.tabMessage.push_back(titleVec.at("gitColorTitle"));
-                }
-                if (config.show_time) {
-                    config.showTabs.push_back(contVec.at("tabTimeColor"));
-                    config.tabMessage.push_back(titleVec.at("timeColorTitle"));
-                }
-                if (config.show_shell) {
-                    config.showTabs.push_back(contVec.at("tabShellColor"));
-                    config.tabMessage.push_back(titleVec.at("shellColorTitle"));
+                std::vector<Component> leftColorPickers;
+                auto addColor = [&](bool show, const string& id, const string& labelText) {
+                    if (show) {
+                        auto comp = contVec.at(id);
+                        auto wrapped
+                          = Renderer(comp, [comp, labelText] { return vbox({ text(labelText) | bold | hcenter, text(""), comp->Render() }); });
+                        leftColorPickers.push_back(wrapped);
+                    }
+                };
+                addColor(config.show_user, "tabUserColor", "User Block Color");
+                addColor(config.show_path, "tabDirColor", "Directory Block Color");
+                addColor(config.show_git, "tabGitColor", "Git Block Color");
+                addColor(config.show_time, "tabTimeColor", "Time Block Color");
+                addColor(config.show_shell, "tabShellColor", "Shell Block Color");
+                addColor(config.show_executiontime, "tabExecutionTimeColor", "Execution Time Color");
+                addColor(config.show_battery, "tabBatteryColor", "Battery Color");
+                addColor(config.show_os, "tabOsColor", "OS Icon Color");
+
+                if (!leftColorPickers.empty()) {
+                    auto leftColorContainer = Container::Vertical(leftColorPickers);
+                    auto scrollableContainer = Renderer(leftColorContainer, [leftColorContainer] {
+                        return leftColorContainer->Render() | vscroll_indicator | yframe | size(HEIGHT, LESS_THAN, 18);
+                    });
+                    config.showTabs.push_back(scrollableContainer);
+                    config.tabMessage.push_back(titleVec.at("leftColorsCombinedTitle"));
                 }
             }
 
             // # Right prompt segment color options
             if (config.use_right) {
-                if (config.show_user_r) {
-                    config.showTabs.push_back(contVec.at("tabUserColorRight"));
-                    config.tabMessage.push_back(titleVec.at("userColorRightTitle"));
-                }
-                if (config.show_path_r) {
-                    config.showTabs.push_back(contVec.at("tabDirColorRight"));
-                    config.tabMessage.push_back(titleVec.at("dirColorRightTitle"));
-                }
-                if (config.show_git_r) {
-                    config.showTabs.push_back(contVec.at("tabGitColorRight"));
-                    config.tabMessage.push_back(titleVec.at("gitColorRightTitle"));
-                }
-                if (config.show_time_r) {
-                    config.showTabs.push_back(contVec.at("tabTimeColorRight"));
-                    config.tabMessage.push_back(titleVec.at("timeColorRightTitle"));
-                }
-                if (config.show_shell_r) {
-                    config.showTabs.push_back(contVec.at("tabShellColorRight"));
-                    config.tabMessage.push_back(titleVec.at("shellColorRightTitle"));
+                std::vector<Component> rightColorPickers;
+                auto addColorR = [&](bool show, const string& id, const string& labelText) {
+                    if (show) {
+                        auto comp = contVec.at(id);
+                        auto wrapped
+                          = Renderer(comp, [comp, labelText] { return vbox({ text(labelText) | bold | hcenter, text(""), comp->Render() }); });
+                        rightColorPickers.push_back(wrapped);
+                    }
+                };
+                addColorR(config.show_user_r, "tabUserColorRight", "User Block Color");
+                addColorR(config.show_path_r, "tabDirColorRight", "Directory Block Color");
+                addColorR(config.show_git_r, "tabGitColorRight", "Git Block Color");
+                addColorR(config.show_time_r, "tabTimeColorRight", "Time Block Color");
+                addColorR(config.show_shell_r, "tabShellColorRight", "Shell Block Color");
+                addColorR(config.show_executiontime_r, "tabExecutionTimeColorRight", "Execution Time Color");
+                addColorR(config.show_battery_r, "tabBatteryColorRight", "Battery Color");
+                addColorR(config.show_os_r, "tabOsColorRight", "OS Icon Color");
+
+                if (!rightColorPickers.empty()) {
+                    auto rightColorContainer = Container::Vertical(rightColorPickers);
+                    auto scrollableContainer = Renderer(rightColorContainer, [rightColorContainer] {
+                        return rightColorContainer->Render() | vscroll_indicator | yframe | size(HEIGHT, LESS_THAN, 18);
+                    });
+                    config.showTabs.push_back(scrollableContainer);
+                    config.tabMessage.push_back(titleVec.at("rightColorsCombinedTitle"));
                 }
             }
 

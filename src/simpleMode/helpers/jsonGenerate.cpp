@@ -56,6 +56,39 @@ static std::vector<json> buildSegments(const std::vector<std::string>& types, co
 }
 
 
+// # Helper: build a complete prompt block (left or right)
+static json buildPromptBlock(const std::string& alignment, const std::vector<std::string>& types, const std::vector<std::string>& templates,
+                             const std::vector<std::string>& colors, const ConfigState& config) {
+    std::vector<json> segmentsJSON = buildSegments(types, templates, colors, config.color_mode, config.color_fg, config.color_bg, "diamond");
+
+    if (!segmentsJSON.empty()) {
+        if (segmentsJSON.size() == 1) {
+            segmentsJSON[0]["leading_diamond"] = (config.dmnd_leading == 0) ? "" : leading_diamonds[config.dmnd_leading];
+            segmentsJSON[0]["trailing_diamond"] = (config.dmnd_trailing == 0) ? "" : trailing_diamonds[config.dmnd_trailing];
+        } else {
+            for (size_t i = 0; i < segmentsJSON.size(); i++) {
+                if (i == 0) {
+                    segmentsJSON[0]["leading_diamond"] = (config.dmnd_leading == 0) ? "" : leading_diamonds[config.dmnd_leading];
+                    segmentsJSON[0]["trailing_diamond"] = (config.dmnd_connecting == 0) ? "" : trailing_diamonds[config.dmnd_connecting];
+                } else if (i == segmentsJSON.size() - 1) {
+                    segmentsJSON.back()["trailing_diamond"] = (config.dmnd_trailing == 0) ? "" : trailing_diamonds[config.dmnd_trailing];
+                } else {
+                    segmentsJSON[i]["trailing_diamond"] = (config.dmnd_connecting == 0) ? "" : trailing_diamonds[config.dmnd_connecting];
+                }
+            }
+        }
+    }
+
+    addSpecialProperties(segmentsJSON);
+
+    return {
+        {      "type",     "prompt" },
+        { "alignment",    alignment },
+        {  "segments", segmentsJSON }
+    };
+}
+
+
 void GenerateJSON(const ConfigState& config) {
     //? Form our JSON object
     json j = {
@@ -68,9 +101,7 @@ void GenerateJSON(const ConfigState& config) {
 
     //? ======================== LEFT PROMPT ========================
     if (config.use_left) {
-        std::vector<std::string> types;
-        std::vector<std::string> templates;
-        std::vector<std::string> colors;
+        std::vector<std::string> types, templates, colors;
 
         if (config.show_user) {
             types.emplace_back("session");
@@ -101,71 +132,29 @@ void GenerateJSON(const ConfigState& config) {
             templates.emplace_back("\uf489 {{ .Name }}");
             colors.push_back(config.color_shell);
         }
-
-
-        // Build segments with diamond style (left prompt uses diamonds)
-        std::vector<json> segmentsJSON = buildSegments(types, templates, colors, config.color_mode, config.color_fg, config.color_bg, "diamond");
-
-        //? Add diamonds based on position
-        if (types.size() == 1) {
-            if (config.dmnd_leading == 0) {
-                segmentsJSON[0]["leading_diamond"] = "";
-            // } else if (config.dmnd_leading > 5) {
-            //     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
-            } else {
-                segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
-            }
-            if (config.dmnd_trailing == 0) {
-                segmentsJSON[0]["trailing_diamond"] = "";
-            } else {
-                segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
-            }
-        } else {
-            for (size_t i = 0; i < types.size(); i++) {
-                if (i == 0) {
-                    if (config.dmnd_leading == 0) {
-                        segmentsJSON[0]["leading_diamond"] = "";
-                    // } else if (config.dmnd_leading > 5) {
-                    //     segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
-                    } else {
-                        segmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
-                    }
-                    if (config.dmnd_connecting == 0) {
-                        segmentsJSON[0]["trailing_diamond"] = "";
-                    } else {
-                        segmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
-                    }
-                } else if (i == types.size() - 1) {
-                    if (config.dmnd_trailing == 0) {
-                        segmentsJSON.back()["trailing_diamond"] = "";
-                    } else {
-                        segmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
-                    }
-                } else {
-                    if (config.dmnd_connecting == 0) {
-                        segmentsJSON[i]["trailing_diamond"] = "";
-                    } else {
-                        segmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
-                    }
-                }
-            }
+        if (config.show_executiontime) {
+            types.emplace_back("executiontime");
+            templates.emplace_back("\ufa1e {{ .FormattedMs }} ");
+            colors.push_back(config.color_executiontime);
+        }
+        if (config.show_battery) {
+            types.emplace_back("battery");
+            templates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
+            colors.push_back(config.color_battery);
+        }
+        if (config.show_os) {
+            types.emplace_back("os");
+            templates.emplace_back(" {{ .Icon }} ");
+            colors.push_back(config.color_os);
         }
 
-        addSpecialProperties(segmentsJSON);
-
-        j["blocks"].push_back({
-          {      "type",     "prompt" },
-          { "alignment",       "left" },
-          {  "segments", segmentsJSON },
-        });
+        j["blocks"].push_back(buildPromptBlock("left", types, templates, colors, config));
     }
 
 
     //? ======================== RIGHT PROMPT ========================
     if (config.use_right) {
-        std::vector<std::string> rightTypes;
-        std::vector<std::string> rightTemplates;
-        std::vector<std::string> rightColors;
+        std::vector<std::string> rightTypes, rightTemplates, rightColors;
 
         if (config.show_user_r) {
             rightTypes.emplace_back("session");
@@ -196,72 +185,23 @@ void GenerateJSON(const ConfigState& config) {
             rightTemplates.emplace_back("\uf489 {{ .Name }}");
             rightColors.push_back(config.color_shell_r);
         }
-
-        // Right prompt: use diamond style (like left prompt)
-        std::vector<json> rightSegmentsJSON
-          = buildSegments(rightTypes, rightTemplates, rightColors, config.color_mode, config.color_fg, config.color_bg, "diamond");
-
-        //? Add diamonds based on position (mirror left prompt behaviour)
-        if (rightTypes.size() == 1) {
-            if (config.dmnd_leading == 0) {
-                rightSegmentsJSON[0]["leading_diamond"] = "";
-            // } else if (config.dmnd_leading > 5) {
-            //     rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
-            } else {
-                rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
-            }
-            if (config.dmnd_trailing == 0) {
-                rightSegmentsJSON[0]["trailing_diamond"] = "";
-            // } else if (config.dmnd_trailing > 5) {
-            //     rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
-            } else {
-                rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
-            }
-        } else {
-            for (size_t i = 0; i < rightTypes.size(); i++) {
-                if (i == 0) {
-                    if (config.dmnd_leading == 0) {
-                        rightSegmentsJSON[0]["leading_diamond"] = "";
-                    // } else if (config.dmnd_leading > 5) {
-                    //     rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading] + " ";
-                    } else {
-                        rightSegmentsJSON[0]["leading_diamond"] = leading_diamonds[config.dmnd_leading];
-                    }
-                    if (config.dmnd_connecting == 0) {
-                        rightSegmentsJSON[0]["trailing_diamond"] = "";
-                    // } else if (config.dmnd_connecting > 5) {
-                    //     rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
-                    } else {
-                        rightSegmentsJSON[0]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
-                    }
-                } else if (i == rightTypes.size() - 1) {
-                    if (config.dmnd_trailing == 0) {
-                        rightSegmentsJSON.back()["trailing_diamond"] = "";
-                    // } else if (config.dmnd_trailing > 5) {
-                    //     rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing] + " ";
-                    } else {
-                        rightSegmentsJSON.back()["trailing_diamond"] = trailing_diamonds[config.dmnd_trailing];
-                    }
-                } else {
-                    if (config.dmnd_connecting == 0) {
-                        rightSegmentsJSON[i]["trailing_diamond"] = "";
-                    // } else if (config.dmnd_connecting > 5) {
-                    //     rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting] + " ";
-                    } else {
-                        rightSegmentsJSON[i]["trailing_diamond"] = trailing_diamonds[config.dmnd_connecting];
-                    }
-                }
-            }
+        if (config.show_executiontime_r) {
+            rightTypes.emplace_back("executiontime");
+            rightTemplates.emplace_back("\ufa1e {{ .FormattedMs }} ");
+            rightColors.push_back(config.color_executiontime_r);
+        }
+        if (config.show_battery_r) {
+            rightTypes.emplace_back("battery");
+            rightTemplates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
+            rightColors.push_back(config.color_battery_r);
+        }
+        if (config.show_os_r) {
+            rightTypes.emplace_back("os");
+            rightTemplates.emplace_back(" {{ .Icon }} ");
+            rightColors.push_back(config.color_os_r);
         }
 
-        addSpecialProperties(rightSegmentsJSON);
-
-        j["blocks"].push_back({
-          {      "type",          "prompt" },
-          { "alignment",           "right" },
-          {  "segments", rightSegmentsJSON },
-        });
-
+        j["blocks"].push_back(buildPromptBlock("right", rightTypes, rightTemplates, rightColors, config));
 
         //* add newline / static left block if right prompt is added
         {
