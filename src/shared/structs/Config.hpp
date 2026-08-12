@@ -77,23 +77,23 @@ struct ConfigState {
     rgb fg_color = { 0, 0, 0 };
     rgb bg_color = { 18, 19, 20 };
     // left prompt colors
+    rgb os_color = { 107, 108, 255 };
     rgb user_color = { 171, 118, 217 };
     rgb path_color = { 130, 170, 255 };
     rgb git_color = { 255, 223, 109 };
     rgb time_color = { 191, 204, 229 };
     rgb shell_color = { 140, 223, 109 };
     rgb executiontime_color = { 255, 255, 100 };
-    rgb battery_color = { 255, 100, 100 };
-    rgb os_color = { 100, 200, 255 };
+    rgb battery_color = { 255, 146, 120 };
     // right prompt colors
+    rgb os_color_r = { 107, 108, 255 };
     rgb user_color_r = { 171, 118, 217 };
     rgb path_color_r = { 130, 170, 255 };
     rgb git_color_r = { 255, 223, 109 };
     rgb time_color_r = { 191, 204, 229 };
     rgb shell_color_r = { 140, 223, 109 };
     rgb executiontime_color_r = { 255, 255, 100 };
-    rgb battery_color_r = { 255, 100, 100 };
-    rgb os_color_r = { 100, 200, 255 };
+    rgb battery_color_r = { 255, 146, 120 };
 
     // advanced mode exclusives
     int template_mode = 0;

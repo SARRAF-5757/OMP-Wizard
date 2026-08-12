@@ -26,6 +26,7 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Right Block", &config.use_right, checkbox_option),
     });
     auto tabChooseBlocks = Container::Vertical({
+      Checkbox("OS Icon", &config.show_os, checkbox_option),
       Checkbox("User Name", &config.show_user, checkbox_option),
       Checkbox("Directory Path", &config.show_path, checkbox_option),
       Checkbox("Git Status", &config.show_git, checkbox_option),
@@ -33,9 +34,9 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Shell Name", &config.show_shell, checkbox_option),
       Checkbox("Execution Time", &config.show_executiontime, checkbox_option),
       Checkbox("Battery", &config.show_battery, checkbox_option),
-      Checkbox("OS Icon", &config.show_os, checkbox_option),
     });
     auto tabChooseRightBlocks = Container::Vertical({
+      Checkbox("OS Icon", &config.show_os_r, checkbox_option),
       Checkbox("User Name", &config.show_user_r, checkbox_option),
       Checkbox("Directory Path", &config.show_path_r, checkbox_option),
       Checkbox("Git Status", &config.show_git_r, checkbox_option),
@@ -43,7 +44,6 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Shell Name", &config.show_shell_r, checkbox_option),
       Checkbox("Execution Time", &config.show_executiontime_r, checkbox_option),
       Checkbox("Battery", &config.show_battery_r, checkbox_option),
-      Checkbox("OS Icon", &config.show_os_r, checkbox_option),
     });
 
     contVec["tabPickPrompts"] = (tabPickPrompts);

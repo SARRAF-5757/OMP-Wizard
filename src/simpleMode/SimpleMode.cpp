@@ -149,6 +149,7 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
                         leftColorPickers.push_back(wrapped);
                     }
                 };
+                addColor(config.show_os, "tabOsColor", "OS Icon Color");
                 addColor(config.show_user, "tabUserColor", "User Block Color");
                 addColor(config.show_path, "tabDirColor", "Directory Block Color");
                 addColor(config.show_git, "tabGitColor", "Git Block Color");
@@ -156,7 +157,6 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
                 addColor(config.show_shell, "tabShellColor", "Shell Block Color");
                 addColor(config.show_executiontime, "tabExecutionTimeColor", "Execution Time Color");
                 addColor(config.show_battery, "tabBatteryColor", "Battery Color");
-                addColor(config.show_os, "tabOsColor", "OS Icon Color");
 
                 if (!leftColorPickers.empty()) {
                     auto leftColorContainer = Container::Vertical(leftColorPickers);
@@ -179,6 +179,7 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
                         rightColorPickers.push_back(wrapped);
                     }
                 };
+                addColorR(config.show_os_r, "tabOsColorRight", "OS Icon Color");
                 addColorR(config.show_user_r, "tabUserColorRight", "User Block Color");
                 addColorR(config.show_path_r, "tabDirColorRight", "Directory Block Color");
                 addColorR(config.show_git_r, "tabGitColorRight", "Git Block Color");
@@ -186,7 +187,6 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
                 addColorR(config.show_shell_r, "tabShellColorRight", "Shell Block Color");
                 addColorR(config.show_executiontime_r, "tabExecutionTimeColorRight", "Execution Time Color");
                 addColorR(config.show_battery_r, "tabBatteryColorRight", "Battery Color");
-                addColorR(config.show_os_r, "tabOsColorRight", "OS Icon Color");
 
                 if (!rightColorPickers.empty()) {
                     auto rightColorContainer = Container::Vertical(rightColorPickers);

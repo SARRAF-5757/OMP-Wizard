@@ -103,6 +103,11 @@ void GenerateJSON(const ConfigState& config) {
     if (config.use_left) {
         std::vector<std::string> types, templates, colors;
 
+        if (config.show_os) {
+            types.emplace_back("os");
+            templates.emplace_back(" {{ .Icon }} ");
+            colors.push_back(config.color_os);
+        }
         if (config.show_user) {
             types.emplace_back("session");
             templates.emplace_back(" {{ .UserName }} ");
@@ -142,11 +147,6 @@ void GenerateJSON(const ConfigState& config) {
             templates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
             colors.push_back(config.color_battery);
         }
-        if (config.show_os) {
-            types.emplace_back("os");
-            templates.emplace_back(" {{ .Icon }} ");
-            colors.push_back(config.color_os);
-        }
 
         j["blocks"].push_back(buildPromptBlock("left", types, templates, colors, config));
     }
@@ -156,6 +156,11 @@ void GenerateJSON(const ConfigState& config) {
     if (config.use_right) {
         std::vector<std::string> rightTypes, rightTemplates, rightColors;
 
+        if (config.show_os_r) {
+            rightTypes.emplace_back("os");
+            rightTemplates.emplace_back(" {{ .Icon }} ");
+            rightColors.push_back(config.color_os_r);
+        }
         if (config.show_user_r) {
             rightTypes.emplace_back("session");
             rightTemplates.emplace_back(" {{ .UserName }} ");
@@ -194,11 +199,6 @@ void GenerateJSON(const ConfigState& config) {
             rightTypes.emplace_back("battery");
             rightTemplates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
             rightColors.push_back(config.color_battery_r);
-        }
-        if (config.show_os_r) {
-            rightTypes.emplace_back("os");
-            rightTemplates.emplace_back(" {{ .Icon }} ");
-            rightColors.push_back(config.color_os_r);
         }
 
         j["blocks"].push_back(buildPromptBlock("right", rightTypes, rightTemplates, rightColors, config));
