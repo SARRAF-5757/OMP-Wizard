@@ -76,6 +76,9 @@ struct ConfigState {
     // setting default colors on pages
     rgb fg_color = { 0, 0, 0 };
     rgb bg_color = { 18, 19, 20 };
+    // block ordering
+    std::vector<std::string> left_order = {"os", "session", "path", "git", "time", "shell", "executiontime", "battery"};
+    std::vector<std::string> right_order = {"os", "session", "path", "git", "time", "shell", "executiontime", "battery"};
     // left prompt colors
     rgb os_color = { 107, 108, 255 };
     rgb user_color = { 171, 118, 217 };

@@ -46,9 +46,105 @@ unordered_map<std::string, ftxui::Component> genPageContents(ConfigState& config
       Checkbox("Battery", &config.show_battery_r, checkbox_option),
     });
 
+    // MenuOption to set up labels to be shown from string identifiers
+    MenuOption order_menu_option;
+    order_menu_option.entries_option.transform = [](const EntryState& state) {
+        std::string label = state.label;
+        if (label == "os")
+            label = "OS Icon";
+        else if (label == "session")
+            label = "User Name";
+        else if (label == "path")
+            label = "Directory Path";
+        else if (label == "git")
+            label = "Git Status";
+        else if (label == "time")
+            label = "Time";
+        else if (label == "shell")
+            label = "Shell Name";
+        else if (label == "executiontime")
+            label = "Execution Time";
+        else if (label == "battery")
+            label = "Battery";
+
+        // use > to indicate the currently selected item
+        auto prefix = state.active ? text("> ") : text("  ");
+        auto element = hbox({ prefix, text(label) });
+        if (state.focused)
+            element = element | inverted;
+        return element;
+    };
+
+    // Left prompt reordering component
+    auto left_selected = std::make_shared<int>(0);
+    auto left_menu = Menu(&config.left_order, left_selected.get(), order_menu_option);
+
+    auto left_reorder = CatchEvent(left_menu, [&config, left_selected](Event event) {
+        // Pressing 'u' swaps the currently selected block with the one above it
+        if (event == Event::Character('u') || event == Event::Character('U')) {
+            if (*left_selected > 0) {
+                std::swap(config.left_order[*left_selected], config.left_order[*left_selected - 1]);
+                (*left_selected)--;
+                return true;
+            }
+        }
+        // Pressing 'd' swaps the currently selected block with the one below it
+        if (event == Event::Character('d') || event == Event::Character('D')) {
+            if (*left_selected < (int) config.left_order.size() - 1) {
+                std::swap(config.left_order[*left_selected], config.left_order[*left_selected + 1]);
+                (*left_selected)++;
+                return true;
+            }
+        }
+        return false;
+    });
+
+    // Right prompt reordering component
+    auto right_selected = std::make_shared<int>(0);
+    auto right_menu = Menu(&config.right_order, right_selected.get(), order_menu_option);
+
+    auto right_reorder = CatchEvent(right_menu, [&config, right_selected](Event event) {
+        // Pressing 'u' swaps the currently selected block with the one above it
+        if (event == Event::Character('u') || event == Event::Character('U')) {
+            if (*right_selected > 0) {
+                std::swap(config.right_order[*right_selected], config.right_order[*right_selected - 1]);
+                (*right_selected)--;
+                return true;
+            }
+        }
+        // Pressing 'd' swaps the currently selected block with the one below it
+        if (event == Event::Character('d') || event == Event::Character('D')) {
+            if (*right_selected < (int) config.right_order.size() - 1) {
+                std::swap(config.right_order[*right_selected], config.right_order[*right_selected + 1]);
+                (*right_selected)++;
+                return true;
+            }
+        }
+        return false;
+    });
+
+    auto order_container = Container::Horizontal({ left_reorder, right_reorder });
+
+    auto order_renderer = Renderer(order_container, [left_reorder, right_reorder, &config] {
+        Elements cols;
+        if (config.use_left && !config.left_order.empty()) {
+            cols.push_back(vbox({ text("Left Prompt") | bold | hcenter | underlined, text(""), left_reorder->Render() }) | flex);
+        }
+        if (config.use_left && config.use_right) {
+            cols.push_back(text("   "));
+            cols.push_back(separator());
+            cols.push_back(text("   "));
+        }
+        if (config.use_right && !config.right_order.empty()) {
+            cols.push_back(vbox({ text("Right Prompt") | bold | hcenter | underlined, text(""), right_reorder->Render() }) | flex);
+        }
+        return vbox({ text("Select an item and press 'u' to move up, 'd' to move down.") | dim | hcenter, text(""), hbox(cols) });
+    });
+
     contVec["tabPickPrompts"] = (tabPickPrompts);
     contVec["tabChooseBlocks"] = (tabChooseBlocks);
     contVec["tabChooseRightBlocks"] = (tabChooseRightBlocks);
+    contVec["tabOrderBlocks"] = (order_renderer);
     contVec["tabColorMode"] = Radiobox(RadioboxOption { color_mode_choice, &config.color_mode, radiobox_option.transform });
     contVec["tabTrPrompt"] = Radiobox(RadioboxOption { boolean_choice, &config.tr_prompt, radiobox_option.transform });
     contVec["tabTitle"] = Radiobox(RadioboxOption { title_choices, &config.title_mode, radiobox_option.transform });
@@ -83,6 +179,7 @@ unordered_map<std::string, std::string> genPageTitles() {
 
     titleVec["promptPickTitle"] = "Which prompt sides do you want to configure?";
     titleVec["blocksCombinedTitle"] = "Choose Components for your Prompts";
+    titleVec["orderBlocksTitle"] = "Order Your Prompt Segments";
     titleVec["colorModeTitle"] = "How should the prompt(s) be colorized?";
     titleVec["trPromptTitle"] = "Transient Prompt: Do you want to reduce clutter by shrinking your prompt after you hit Enter?";
     titleVec["titleTitle"] = "What should the terminal tab titles look like?";
@@ -167,26 +264,46 @@ static ftxui::Element renderSegments(const std::vector<PreviewSegment>& segments
 ftxui::Element buildLivePreview(const ConfigState& config) {
     std::vector<PreviewSegment> leftSegments;
     if (config.use_left) {
-        if (config.show_os) leftSegments.push_back({ " OS ", config.os_color });
-        if (config.show_user) leftSegments.push_back({ " user@host ", config.user_color });
-        if (config.show_path) leftSegments.push_back({ " ~/dir ", config.path_color });
-        if (config.show_git) leftSegments.push_back({ " main ", config.git_color });
-        if (config.show_time) leftSegments.push_back({ " 12:34 ", config.time_color });
-        if (config.show_shell) leftSegments.push_back({ " bash ", config.shell_color });
-        if (config.show_executiontime) leftSegments.push_back({ " 123ms ", config.executiontime_color });
-        if (config.show_battery) leftSegments.push_back({ " 100% ", config.battery_color });
+        for (const auto& block : config.left_order) {
+            if (block == "os" && config.show_os)
+                leftSegments.push_back({ " OS ", config.os_color });
+            else if (block == "session" && config.show_user)
+                leftSegments.push_back({ " user@host ", config.user_color });
+            else if (block == "path" && config.show_path)
+                leftSegments.push_back({ " ~/dir ", config.path_color });
+            else if (block == "git" && config.show_git)
+                leftSegments.push_back({ " main ", config.git_color });
+            else if (block == "time" && config.show_time)
+                leftSegments.push_back({ " 12:34 ", config.time_color });
+            else if (block == "shell" && config.show_shell)
+                leftSegments.push_back({ " bash ", config.shell_color });
+            else if (block == "executiontime" && config.show_executiontime)
+                leftSegments.push_back({ " 123ms ", config.executiontime_color });
+            else if (block == "battery" && config.show_battery)
+                leftSegments.push_back({ " 100% ", config.battery_color });
+        }
     }
 
     std::vector<PreviewSegment> rightSegments;
     if (config.use_right) {
-        if (config.show_os_r) rightSegments.push_back({ " OS ", config.os_color_r });
-        if (config.show_user_r) rightSegments.push_back({ " user@host ", config.user_color_r });
-        if (config.show_path_r) rightSegments.push_back({ " ~/dir ", config.path_color_r });
-        if (config.show_git_r) rightSegments.push_back({ " main ", config.git_color_r });
-        if (config.show_time_r) rightSegments.push_back({ " 12:34 ", config.time_color_r });
-        if (config.show_shell_r) rightSegments.push_back({ " bash ", config.shell_color_r });
-        if (config.show_executiontime_r) rightSegments.push_back({ " 123ms ", config.executiontime_color_r });
-        if (config.show_battery_r) rightSegments.push_back({ " 100% ", config.battery_color_r });
+        for (const auto& block : config.right_order) {
+            if (block == "os" && config.show_os_r)
+                rightSegments.push_back({ " OS ", config.os_color_r });
+            else if (block == "session" && config.show_user_r)
+                rightSegments.push_back({ " user@host ", config.user_color_r });
+            else if (block == "path" && config.show_path_r)
+                rightSegments.push_back({ " ~/dir ", config.path_color_r });
+            else if (block == "git" && config.show_git_r)
+                rightSegments.push_back({ " main ", config.git_color_r });
+            else if (block == "time" && config.show_time_r)
+                rightSegments.push_back({ " 12:34 ", config.time_color_r });
+            else if (block == "shell" && config.show_shell_r)
+                rightSegments.push_back({ " bash ", config.shell_color_r });
+            else if (block == "executiontime" && config.show_executiontime_r)
+                rightSegments.push_back({ " 123ms ", config.executiontime_color_r });
+            else if (block == "battery" && config.show_battery_r)
+                rightSegments.push_back({ " 100% ", config.battery_color_r });
+        }
     }
 
     auto leftEl = renderSegments(leftSegments, config);

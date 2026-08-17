@@ -72,6 +72,10 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
                 config.tabMessage.push_back(titleVec.at("blocksCombinedTitle"));
             }
 
+            // Add the new ordering tab
+            config.showTabs.push_back(contVec.at("tabOrderBlocks"));
+            config.tabMessage.push_back(titleVec.at("orderBlocksTitle"));
+
             // Add color mode page
             config.showTabs.push_back(contVec.at("tabColorMode"));
             config.tabMessage.push_back(titleVec.at("colorModeTitle"));
@@ -93,10 +97,39 @@ Component MakeSimpleMode(ConfigState& config, function<void()> on_quit) {
             if (!leftOk || !rightOk) {
                 return;
             }
+
+            // Populate the vector with segments (to be re-ordered later)
+            if (config.left_order.size() == 8 || config.right_order.size() == 8) {
+                std::vector<std::string> new_left;
+                for (const auto& b : config.left_order) {
+                    if (b == "os" && config.show_os) new_left.push_back(b);
+                    else if (b == "session" && config.show_user) new_left.push_back(b);
+                    else if (b == "path" && config.show_path) new_left.push_back(b);
+                    else if (b == "git" && config.show_git) new_left.push_back(b);
+                    else if (b == "time" && config.show_time) new_left.push_back(b);
+                    else if (b == "shell" && config.show_shell) new_left.push_back(b);
+                    else if (b == "executiontime" && config.show_executiontime) new_left.push_back(b);
+                    else if (b == "battery" && config.show_battery) new_left.push_back(b);
+                }
+                config.left_order = new_left;
+
+                std::vector<std::string> new_right;
+                for (const auto& b : config.right_order) {
+                    if (b == "os" && config.show_os_r) new_right.push_back(b);
+                    else if (b == "session" && config.show_user_r) new_right.push_back(b);
+                    else if (b == "path" && config.show_path_r) new_right.push_back(b);
+                    else if (b == "git" && config.show_git_r) new_right.push_back(b);
+                    else if (b == "time" && config.show_time_r) new_right.push_back(b);
+                    else if (b == "shell" && config.show_shell_r) new_right.push_back(b);
+                    else if (b == "executiontime" && config.show_executiontime_r) new_right.push_back(b);
+                    else if (b == "battery" && config.show_battery_r) new_right.push_back(b);
+                }
+                config.right_order = new_right;
+            }
         }
 
         //! Add all remaining tabs
-        int colorModeIndex = 2;   // prompt picker is 0, and unified block selector is 1, this is 2
+        int colorModeIndex = 3;   // prompt picker is 0, and unified block selector is 1, order blocks is 2, this is 3
 
         if (!config.tabsAdded && config.tabSelected == colorModeIndex) {
             config.tabsAdded = true;

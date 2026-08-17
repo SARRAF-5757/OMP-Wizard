@@ -103,49 +103,44 @@ void GenerateJSON(const ConfigState& config) {
     if (config.use_left) {
         std::vector<std::string> types, templates, colors;
 
-        if (config.show_os) {
-            types.emplace_back("os");
-            templates.emplace_back(" {{ .Icon }} ");
-            colors.push_back(config.color_os);
-        }
-        if (config.show_user) {
-            types.emplace_back("session");
-            templates.emplace_back(" {{ .UserName }} ");
-            colors.push_back(config.color_user);
-        }
-        if (config.show_path) {
-            types.emplace_back("path");
-            templates.emplace_back(" \ue5ff {{ .Path }} ");
-            colors.push_back(config.color_path);
-        }
-        if (config.show_git) {
-            types.emplace_back("git");
-            templates.emplace_back(
-              " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
-              "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
-              ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
-              "}}{{ end }} ");
-            colors.push_back(config.color_git);
-        }
-        if (config.show_time) {
-            types.emplace_back("time");
-            templates.emplace_back("\ue641 {{ .CurrentDate | date .Format }}");
-            colors.push_back(config.color_time);
-        }
-        if (config.show_shell) {
-            types.emplace_back("shell");
-            templates.emplace_back("\uf489 {{ .Name }}");
-            colors.push_back(config.color_shell);
-        }
-        if (config.show_executiontime) {
-            types.emplace_back("executiontime");
-            templates.emplace_back("\ufa1e {{ .FormattedMs }} ");
-            colors.push_back(config.color_executiontime);
-        }
-        if (config.show_battery) {
-            types.emplace_back("battery");
-            templates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
-            colors.push_back(config.color_battery);
+        for (const auto& block : config.left_order) {
+            if (block == "os" && config.show_os) {
+                types.emplace_back("os");
+                templates.emplace_back(" {{ .Icon }} ");
+                colors.push_back(config.color_os);
+            } else if (block == "session" && config.show_user) {
+                types.emplace_back("session");
+                templates.emplace_back(" {{ .UserName }} ");
+                colors.push_back(config.color_user);
+            } else if (block == "path" && config.show_path) {
+                types.emplace_back("path");
+                templates.emplace_back(" \ue5ff {{ .Path }} ");
+                colors.push_back(config.color_path);
+            } else if (block == "git" && config.show_git) {
+                types.emplace_back("git");
+                templates.emplace_back(
+                  " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
+                  "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
+                  ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
+                  "}}{{ end }} ");
+                colors.push_back(config.color_git);
+            } else if (block == "time" && config.show_time) {
+                types.emplace_back("time");
+                templates.emplace_back("\ue641 {{ .CurrentDate | date .Format }}");
+                colors.push_back(config.color_time);
+            } else if (block == "shell" && config.show_shell) {
+                types.emplace_back("shell");
+                templates.emplace_back("\uf489 {{ .Name }}");
+                colors.push_back(config.color_shell);
+            } else if (block == "executiontime" && config.show_executiontime) {
+                types.emplace_back("executiontime");
+                templates.emplace_back("\ufa1e {{ .FormattedMs }} ");
+                colors.push_back(config.color_executiontime);
+            } else if (block == "battery" && config.show_battery) {
+                types.emplace_back("battery");
+                templates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
+                colors.push_back(config.color_battery);
+            }
         }
 
         j["blocks"].push_back(buildPromptBlock("left", types, templates, colors, config));
@@ -156,49 +151,44 @@ void GenerateJSON(const ConfigState& config) {
     if (config.use_right) {
         std::vector<std::string> rightTypes, rightTemplates, rightColors;
 
-        if (config.show_os_r) {
-            rightTypes.emplace_back("os");
-            rightTemplates.emplace_back(" {{ .Icon }} ");
-            rightColors.push_back(config.color_os_r);
-        }
-        if (config.show_user_r) {
-            rightTypes.emplace_back("session");
-            rightTemplates.emplace_back(" {{ .UserName }} ");
-            rightColors.push_back(config.color_user_r);
-        }
-        if (config.show_path_r) {
-            rightTypes.emplace_back("path");
-            rightTemplates.emplace_back(" \ue5ff {{ .Path }} ");
-            rightColors.push_back(config.color_path_r);
-        }
-        if (config.show_git_r) {
-            rightTypes.emplace_back("git");
-            rightTemplates.emplace_back(
-              " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
-              "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
-              ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
-              "}}{{ end }} ");
-            rightColors.push_back(config.color_git_r);
-        }
-        if (config.show_time_r) {
-            rightTypes.emplace_back("time");
-            rightTemplates.emplace_back("\ue641 {{ .CurrentDate | date .Format }}");
-            rightColors.push_back(config.color_time_r);
-        }
-        if (config.show_shell_r) {
-            rightTypes.emplace_back("shell");
-            rightTemplates.emplace_back("\uf489 {{ .Name }}");
-            rightColors.push_back(config.color_shell_r);
-        }
-        if (config.show_executiontime_r) {
-            rightTypes.emplace_back("executiontime");
-            rightTemplates.emplace_back("\ufa1e {{ .FormattedMs }} ");
-            rightColors.push_back(config.color_executiontime_r);
-        }
-        if (config.show_battery_r) {
-            rightTypes.emplace_back("battery");
-            rightTemplates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
-            rightColors.push_back(config.color_battery_r);
+        for (const auto& block : config.right_order) {
+            if (block == "os" && config.show_os_r) {
+                rightTypes.emplace_back("os");
+                rightTemplates.emplace_back(" {{ .Icon }} ");
+                rightColors.push_back(config.color_os_r);
+            } else if (block == "session" && config.show_user_r) {
+                rightTypes.emplace_back("session");
+                rightTemplates.emplace_back(" {{ .UserName }} ");
+                rightColors.push_back(config.color_user_r);
+            } else if (block == "path" && config.show_path_r) {
+                rightTypes.emplace_back("path");
+                rightTemplates.emplace_back(" \ue5ff {{ .Path }} ");
+                rightColors.push_back(config.color_path_r);
+            } else if (block == "git" && config.show_git_r) {
+                rightTypes.emplace_back("git");
+                rightTemplates.emplace_back(
+                  " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} "
+                  "\uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if "
+                  ".Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount "
+                  "}}{{ end }} ");
+                rightColors.push_back(config.color_git_r);
+            } else if (block == "time" && config.show_time_r) {
+                rightTypes.emplace_back("time");
+                rightTemplates.emplace_back("\ue641 {{ .CurrentDate | date .Format }}");
+                rightColors.push_back(config.color_time_r);
+            } else if (block == "shell" && config.show_shell_r) {
+                rightTypes.emplace_back("shell");
+                rightTemplates.emplace_back("\uf489 {{ .Name }}");
+                rightColors.push_back(config.color_shell_r);
+            } else if (block == "executiontime" && config.show_executiontime_r) {
+                rightTypes.emplace_back("executiontime");
+                rightTemplates.emplace_back("\ufa1e {{ .FormattedMs }} ");
+                rightColors.push_back(config.color_executiontime_r);
+            } else if (block == "battery" && config.show_battery_r) {
+                rightTypes.emplace_back("battery");
+                rightTemplates.emplace_back(" {{ if not .Error }}{{ .Icon }}{{ .Percentage }}{{ end }}% ");
+                rightColors.push_back(config.color_battery_r);
+            }
         }
 
         j["blocks"].push_back(buildPromptBlock("right", rightTypes, rightTemplates, rightColors, config));
