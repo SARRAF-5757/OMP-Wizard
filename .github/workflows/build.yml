@@ -2,10 +2,10 @@ name: Build Multi-Platform Binaries
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ["v*"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           - os: ubuntu-22.04
             artifact_name: linux-omp-wizard
             binary_path: build/omp-wizard
-            cmake_flags: -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
+            cmake_flags: ""
 
           - os: macos-latest
             artifact_name: mac-omp-wizard
@@ -41,21 +41,20 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build
+          sudo apt-get install -y build-essential cmake
 
-      - name: Set up MinGW on Windows
+      - name: Set up MinGW (UCRT64) on Windows
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: true
-          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+          install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
           path-type: inherit
 
       # --- Configure & Build ---
       - name: Configure CMake
-        run: >
-          cmake -B build
+        run: cmake -B build
           -DCMAKE_BUILD_TYPE=Release
           ${{ matrix.cmake_flags }}
 
