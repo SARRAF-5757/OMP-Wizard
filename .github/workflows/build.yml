@@ -1,0 +1,98 @@
+name: Build Multi-Platform Binaries
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact_name: linux-omp-wizard
+            binary_path: build/omp-wizard
+            cmake_flags: -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
+
+          - os: macos-latest
+            artifact_name: mac-omp-wizard
+            binary_path: build/omp-wizard
+            cmake_flags: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+          - os: windows-latest
+            artifact_name: win-omp-wizard.exe
+            binary_path: build/omp-wizard.exe
+            cmake_flags: -G "Ninja"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- Platform-specific toolchain setup ---
+      - name: Install Linux tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+
+      - name: Set up MinGW on Windows
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+          path-type: inherit
+
+      # --- Configure & Build ---
+      - name: Configure CMake
+        run: >
+          cmake -B build
+          -DCMAKE_BUILD_TYPE=Release
+          ${{ matrix.cmake_flags }}
+
+      - name: Build Release Binary
+        run: cmake --build build --config Release --target omp-wizard
+
+      # --- Stage and Rename Artifact ---
+      - name: Stage binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "${{ matrix.binary_path }}" "dist/${{ matrix.artifact_name }}"
+
+      # --- Upload Artifact for this OS ---
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/${{ matrix.artifact_name }}
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all built binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create Release and Upload Binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
