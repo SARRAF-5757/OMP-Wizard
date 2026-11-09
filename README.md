@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/Logo.png?raw=true" alt="OMP-Wizard Logo" width="50%"/>
+  <img src="images/Logo.png" alt="OMP-Wizard Logo" width="50%"/>
 </p>
 
 # OMP Wizard
@@ -7,16 +7,22 @@
 A visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
 
 <p align="center">
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/demo.gif?raw=true" alt="demo GIF" width="90%"/>
+  <video
+    src=""
+    autoplay loop muted playsinline alt="demo GIF" width="90%"></video>
 </p>
 
 <p align="center">
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-modes.png?raw=true" alt="color-modes" width="48%"/>
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/main-screen.png?raw=true" alt="main-screen" width="48%"/>
+  <img src="images/color-modes.png" alt="color-modes" width="50%"/>
+</p>
+
+<p align="center">
+  <img src="images/choose-blocks.png" alt="main-screen" width="48%"/>
+  <img src="images/reorder-blocks.png" alt="main-screen" width="48%"/>
 </p>
 <p align="center">
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/choose-diamond.png?raw=true" alt="choose-diamond" width="48%"/>
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/color-picker.png?raw=true" alt="color-picker" width="48%"/>
+  <img src="images/choose-diamond.png" alt="choose-diamond" width="48%"/>
+  <img src="images/color-picker.png" alt="color-picker" width="48%"/>
 </p>
 
 # Getting Started
@@ -25,22 +31,19 @@ A visual wizard to help users set up and customize their [Oh-My-Posh](https://gi
 
 1. Download the binary for your system (Mac/Windows/Linux) from the [Releases](https://github.com/SARRAF-5757/OMP-Wizard/releases) page
 2. Open your terminal app and navigate (cd) to the directory where you downloaded the file (ex. Downloads)
-3. Give the binary permissions with `chmod +x omp-wizard`
-4. Run the wizard with `./omp-wizard`
-   [Note: Check [Troubleshooting](https://github.com/SARRAF-5757/OMP-Wizard?tab=readme-ov-file#troubleshooting) if mac blocks the command]
-5. Follow on-screen directions
-6. On completion the wizard will generate the theme file- `generated-theme.omp.json`
-7. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
-8. Restart your shell and enjoy :)
+3. Run the wizard with `./[os]-omp-wizard` (ex: `./mac-omp-wizard`)
+   [Note: Check [Troubleshooting](#troubleshooting) if mac blocks the command]
+4. Follow on-screen directions
+5. On completion, the wizard will generate the theme file- `generated-theme.omp.json` and add it to your shell config
+6. Restart your shell (ex. `source ~/.bashrc`) and enjoy :)
 
 ### Windows
 
 1. Double click the downloaded file or run it by `.\win-omp-wizard.exe` in the terminal
-   [Note: Check [Troubleshooting](https://github.com/SARRAF-5757/OMP-Wizard?tab=readme-ov-file#troubleshooting) if facing trouble opening the executable]
+   [Note: Check [Troubleshooting](#troubleshooting) if facing trouble opening the executable]
 2. Follow the on-screen directions
-3. On completion the wizard will generate the theme file- `generated-theme.omp.json`
-4. Add its path to your shell config following this [guide](https://ohmyposh.dev/docs/installation/prompt)
-5. Restart your shell
+3. On completion, the wizard will generate the theme file- `generated-theme.omp.json` and add it to your shell config
+4. Restart your shell
 
 _Pro Tip:_ The wizard generates the file in the directory you run it from. If you keep the wizard and the generated JSON file in a permanent location, you can re-run the wizard later to overwrite it, and your shell will update automatically upon restart!
 
@@ -51,27 +54,27 @@ _Pro Tip:_ The wizard generates the file in the directory you run it from. If yo
   - [x] Directory Path
   - [x] Git Status
   - [ ] More blocks coming!
-- [ ] Right prompt customization
-  - [ ] Time
-  - [ ] Shell
+- [x] Right prompt customization
+  - [x] Time
+  - [x] Shell
   - [ ] Dynamic Tooling blocks
   - [ ] More coming
 - [x] Three color modes (full/text/monochrome)
 - [x] Color Picker
-  - [ ] Manual HEX entry
+  - [x] Manual HEX entry
 - [x] Transient Prompt support
   - [ ] Transient Prompt customization
 - [x] Tab title customization
-- [ ] Live render of prompt's current customization progress
+- [x] Live render of prompt's current customization progress
 - [ ] Agnoster support for path block
 - [ ] Icon-less mode
-- [ ] Advanced Mode
-- [ ] Platform support
+- [x] Advanced Mode
+- [x] Platform support
   - [x] Apple Silicon Mac
-  - [ ] Intel Mac
+  - [x] Intel Mac
   - [x] Windows
   - [x] Linux
-- [ ] Unified and streamlined setup process for all platforms
+- [x] Unified and streamlined setup process for all platforms
 - [ ] More customization!
 
 ## Suggestions and Feature Requests
