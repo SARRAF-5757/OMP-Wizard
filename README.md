@@ -7,20 +7,20 @@
 A visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
 
 <p align="center">
-  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/demo.gif?raw=true" alt="demo GIF" width="90%"/>
+  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/demo.gif?raw=true" alt="demo GIF" width="80%"/>
 </p>
 
 <p align="center">
-  <img src="images/color-modes.png" alt="color-modes" width="50%"/>
+  <img src="images/color-modes.png" alt="color-modes" width="70%"/>
 </p>
 
 <p align="center">
-  <img src="images/choose-blocks.png" alt="main-screen" width="48%"/>
-  <img src="images/reorder-blocks.png" alt="main-screen" width="48%"/>
+  <img src="images/choose-blocks.png" alt="main-screen" width="46%"/>
+  <img src="images/reorder-blocks.png" alt="main-screen" width="46%"/>
 </p>
 <p align="center">
-  <img src="images/choose-diamond.png" alt="choose-diamond" width="48%"/>
-  <img src="images/color-picker.png" alt="color-picker" width="48%"/>
+  <img src="images/choose-diamond.png" alt="choose-diamond" width="46%"/>
+  <img src="images/color-picker.png" alt="color-picker" width="46%"/>
 </p>
 
 # Getting Started
