@@ -7,9 +7,7 @@
 A visual wizard to help users set up and customize their [Oh-My-Posh](https://github.com/JanDeDobbeleer/oh-my-posh) prompts.
 
 <p align="center">
-  <video
-    src=""
-    autoplay loop muted playsinline alt="demo GIF" width="90%"></video>
+  <img src="https://github.com/SARRAF-5757/OMP-Wizard/blob/main/images/demo.gif?raw=true" alt="demo GIF" width="90%"/>
 </p>
 
 <p align="center">
